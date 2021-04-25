@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import axios from 'axios';
@@ -34,6 +33,7 @@ const ChatRoom = (props) => {
             socket.emit('join-chat', { chatroomId: room._id });
 
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [room]);
 
     useEffect(() => {
@@ -42,6 +42,7 @@ const ChatRoom = (props) => {
                 setMessageList([...messageList, message]);
             })
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [messageList])
 
     const [messageDisplay, setMessageDisplay] = useState(null);
@@ -64,6 +65,7 @@ const ChatRoom = (props) => {
             });
             setMessageDisplay(message);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [messageList])
 
     const [message, setMessage] = useState("");
@@ -98,7 +100,7 @@ const ChatRoom = (props) => {
                 </div>
                 <div className="h-list-body">
                     <div className="main-chat-cont">
-                        <PerfectScrollbar>
+                        <PerfectScrollbar >
                             <div className="main-friend-chat">
                                 {messageDisplay}
                             </div>

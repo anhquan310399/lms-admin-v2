@@ -85,6 +85,7 @@ const UserManager = () => {
         if (role !== "") {
             getUsers(pageConfig.page, pageConfig.pageSize, statusFilter, searchText);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [role, pageConfig, statusFilter, searchText])
 
     const getUsers = (page, pageSize, status, code) => {
