@@ -29,7 +29,7 @@ class AdminLayout extends Component {
         }
         const token = getCookie("token");
         if (token && !this.state.socket) {
-            const newSocket = io("http://localhost:8000", {
+            const newSocket = io(process.env.REACT_APP_API_URL, {
                 query: {
                     token: token,
                 },
