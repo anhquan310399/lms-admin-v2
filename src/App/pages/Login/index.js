@@ -149,6 +149,7 @@ const Login = ({ history }) => {
                                         appId={FACEBOOK_CLIENT_ID}
                                         callback={responseFacebook}
                                         render={renderProps => (
+                                            // eslint-disable-next-line jsx-a11y/alt-text
                                             <img className="button-google-login" style={{ cursor: "pointer" }} src={Facebook} onClick={() => renderProps.onClick()} disabled={renderProps.disabled} />
                                         )}
                                     />
@@ -157,6 +158,7 @@ const Login = ({ history }) => {
                                 <Col span={12} className="google-login">
                                     <GoogleLogin clientId={GOOGLE_CLIENT_ID}
                                         render={renderProps => (
+                                            // eslint-disable-next-line jsx-a11y/alt-text
                                             <img className="button-google-login" style={{ cursor: "pointer" }} src={Google} onClick={() => renderProps.onClick()} disabled={renderProps.disabled} />
                                         )}
                                         onSuccess={responseGoogle}

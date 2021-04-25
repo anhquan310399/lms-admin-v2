@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-template-curly-in-string */
 import React, { useState, useEffect } from "react";
 import 'antd/dist/antd.css';
 import { Drawer, Form, Button, Input, Select } from 'antd';

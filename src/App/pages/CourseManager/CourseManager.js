@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card } from 'react-bootstrap';
 import { Modal, Space, Table, Button, Input, Tag } from 'antd';

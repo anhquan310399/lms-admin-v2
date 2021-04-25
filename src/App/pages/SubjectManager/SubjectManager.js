@@ -96,6 +96,33 @@ const SubjectManager = () => {
     const [searchText, setSearchText] = useState("");
 
     useEffect(() => {
+        const getSubjects = (page, pageSize, role, name) => {
+            const token = getCookie("token");
+            setLoading(true);
+            axios
+                .post(`${process.env.REACT_APP_API_URL}/admin/subject/filter`,
+                    {
+                        page, pageSize, role, name
+                    },
+                    {
+                        headers: {
+                            Authorization: token,
+                        },
+                    })
+                .then((res) => {
+                    const data = [];
+                    const arr = res.data.allSubject;
+                    arr.forEach((element) => {
+                        data.push({ key: data.length, ...element });
+                    });
+                    setLoading(false);
+                    setListSubject(data);
+                    setTotalRecords(res.data.total);
+                })
+                .catch(err => {
+                    handleError(err);
+                });
+        };
         getSubjects(pageConfig.page, pageConfig.pageSize, roleFilter, searchText);
     }, [pageConfig, roleFilter, searchText]);
 
@@ -163,34 +190,6 @@ const SubjectManager = () => {
     const handleResetSearch = clearFilters => {
         clearFilters();
         setSearchText('');
-    };
-
-    const getSubjects = (page, pageSize, role, name) => {
-        const token = getCookie("token");
-        setLoading(true);
-        axios
-            .post(`${process.env.REACT_APP_API_URL}/admin/subject/filter`,
-                {
-                    page, pageSize, role, name
-                },
-                {
-                    headers: {
-                        Authorization: token,
-                    },
-                })
-            .then((res) => {
-                const data = [];
-                const arr = res.data.allSubject;
-                arr.forEach((element) => {
-                    data.push({ key: data.length, ...element });
-                });
-                setLoading(false);
-                setListSubject(data);
-                setTotalRecords(res.data.total);
-            })
-            .catch(err => {
-                handleError(err);
-            });
     };
 
     const columns = [

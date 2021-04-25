@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import 'antd/dist/antd.css';
 import { Drawer, Form, Button, Input, Select } from 'antd';
@@ -17,6 +18,7 @@ const layout = {
 };
 
 const validateMessages = {
+    // eslint-disable-next-line no-template-curly-in-string
     required: "${label} is required!",
 };
 
