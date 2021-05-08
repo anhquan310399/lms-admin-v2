@@ -5,7 +5,7 @@ import Fullscreen from "react-full-screen";
 import windowSize from 'react-window-size';
 
 import Navigation from './Navigation';
-import NavBar from './NavBar';
+import NavBar from './NavBar/NavBar';
 import Loader from "../Loader";
 import routes from "../../../routes";
 import Aux from "../../../hoc/_Aux";

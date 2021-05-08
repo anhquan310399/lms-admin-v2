@@ -12,7 +12,6 @@ const Room = (props) => {
                 <a className="media-left" href={DEMO.BLANK_LINK}> <img className="media-object img-radius" src={room.image} alt={room.name} /></a>
                 <div className="media-body">
                     <h6 className="chat-header">{room.name}</h6>
-                    <small className="d-block text-c-green">{room.message}</small>
                 </div>
             </div>
         </Aux>

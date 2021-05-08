@@ -3,19 +3,19 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import axios from 'axios';
 import { getCookie, getLocalStorage } from '../../../../../../../../services/localStorage';
 
-import Message from './Message';
+import Message from './Message/Message';
 import Aux from "../../../../../../../../hoc/_Aux";
 import DEMO from "../../../../../../../../store/constant";
-import { Spin, Row, Col } from 'antd';
+import { Spin, Row } from 'antd';
 
 import 'antd/dist/antd.css';
 
 const ChatRoom = (props) => {
-    const { socket } = props;
-    const { room } = props;
+    const { socket, room } = props;
     const [messageList, setMessageList] = useState([]);
     const currentUser = JSON.parse(getLocalStorage("user"));
     const [isLoadMessages, setLoadMessages] = useState(false);
+    let messages = [];
 
     const getMessages = () => {
         setLoadMessages(true);
@@ -25,7 +25,8 @@ const ChatRoom = (props) => {
             }
         })
             .then(res => {
-                setMessageList(res.data.room.messages);
+                messages = messages.concat(res.data.room.messages);
+                setMessageList([...messages]);
                 scrollToBottom();
             })
             .catch(error => {
@@ -43,9 +44,22 @@ const ChatRoom = (props) => {
         if (room._id) {
             getMessages();
             socket.emit('join-chat', { chatroomId: room._id });
+            socket.on("chatMessage", (message) => {
+                messages.push(message);
+                setMessageList([...messages]);
+                scrollToBottom();
+            })
+        }
+        return () => {
+            resetAllComponent();
+            socket.emit('leave-chat', { chatroomId: room._id });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [room]);
+
+    const resetAllComponent = () => {
+        setMessageList([]);
+    }
 
     const scrollToBottom = () => {
         if (scrollCtrRef) {
@@ -65,7 +79,10 @@ const ChatRoom = (props) => {
                 }
             })
             .then(res => {
+                const preHeight = scrollCtrRef.scrollHeight;
                 setMessageList([...res.data.messages, ...messageList]);
+                const currentHeight = scrollCtrRef.scrollHeight
+                scrollToCurrent(currentHeight - preHeight);
             })
             .catch(error => {
                 console.log(error);
@@ -75,44 +92,17 @@ const ChatRoom = (props) => {
             })
     }
 
-    useEffect(() => {
-        if (socket) {
-            socket.on("newMessage", (message) => {
-                setMessageList([...messageList, message]);
-                scrollToBottom();
-            })
+    const scrollToCurrent = (height) => {
+        if (scrollCtrRef) {
+            scrollCtrRef.scrollTop = height;
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [messageList])
-
-    const [messageDisplay, setMessageDisplay] = useState(null);
-
-    useEffect(() => {
-        if (!messageList) {
-            let message = (
-                <div className="media chat-messages text-center">
-                    <div className="media-body chat-menu-content">
-                        <div className="">
-                            <p className="chat-cont">Say hello to new friend</p>
-                        </div>
-                    </div>
-                </div>
-            );
-            setMessageDisplay(message);
-        } else {
-            let message = messageList.map((message) => {
-                return <Message key={message._id} message={message} user={currentUser} />;
-            });
-            setMessageDisplay(message);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [messageList])
+    }
 
     const [message, setMessage] = useState("");
 
     const sendMessage = () => {
         if (message.trim().length > 0) {
-            socket.emit("message", { message: message })
+            socket.emit("chat", { message: message, chatroomId: room._id })
         }
         setMessage("");
     }
@@ -127,7 +117,6 @@ const ChatRoom = (props) => {
     }
 
     const closeChat = () => {
-        socket.emit("leave", { chatroomId: room._id })
         props.closed();
     }
 
@@ -143,7 +132,9 @@ const ChatRoom = (props) => {
                         <PerfectScrollbar
                             onScrollUp={(ref) => {
                                 if (ref.scrollTop === 0) {
-                                    handleLoadMoreMessages();
+                                    if (room._id) {
+                                        handleLoadMoreMessages();
+                                    }
                                 }
                             }}
                             ref={ref => {
@@ -153,13 +144,26 @@ const ChatRoom = (props) => {
                                 setScrollCtrRef(ref);
                             }}>
                             <div className="main-friend-chat">
-                                {isLoadMessages ?
-                                    (<Row justify="center">
+                                {isLoadMessages &&
+                                    <Row justify="center">
                                         <Spin tip="Loading..."></Spin>
-                                    </Row>) :
-                                    null
+                                    </Row>
                                 }
-                                {messageDisplay}
+                                {(!isLoadMessages && messageList?.length === 0)
+                                    &&
+                                    <div className="media chat-messages text-center">
+                                        <div className="media-body chat-menu-content">
+                                            <div className="">
+                                                <p className="chat-cont">Say hello to new friend</p>
+                                            </div>
+                                        </div>
+                                    </div>}
+                                {
+                                    messageList?.length > 0 && messageList.map((message) => {
+                                        return <Message key={message._id} message={message} user={currentUser} />;
+                                    })
+
+                                }
                             </div>
                         </PerfectScrollbar>
                     </div>
