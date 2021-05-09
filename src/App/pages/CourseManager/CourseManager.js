@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card } from 'react-bootstrap';
-import { Modal, Space, Table, Button, Input, Tag } from 'antd';
+import { Modal, Space, Table, Button, Input, Tag, Tooltip } from 'antd';
 import Aux from "../../../hoc/_Aux";
 import {
     ExclamationCircleOutlined,
@@ -182,52 +182,56 @@ const CourseManager = () => {
             render: (text, record, index) => {
                 return (pageConfig.page - 1) * pageConfig.pageSize + index + 1
             },
+            responsive: ['md'],
         },
         {
             title: 'Course name',
             dataIndex: 'name',
             key: 'name',
-            ...getColumnSearchProps('name')
+            ...getColumnSearchProps('name'),
         },
 
         {
             title: 'Subjects',
             key: 'subjects',
-            dataIndex: 'subjects'
+            dataIndex: 'subjects',
+            responsive: ['md'],
         },
         {
             title: 'Action',
             key: 'action',
             render: (text, record) => (
                 <Space size="middle">
-                    <Button
-                        type="default"
-                        icon={<EditOutlined />}
-                        onClick={() => {
-                            setCourse(record);
-                            showDrawer();
-                        }}
-                    >
-                        Edit
-                    </Button>
+                    <Tooltip title="Edit this Course">
+                        <Button
+                            type="default"
+                            icon={<EditOutlined />}
+                            onClick={() => {
+                                setCourse(record);
+                                showDrawer();
+                            }}
+                        >
+
+                        </Button>
+                    </Tooltip>
+
                     {record.isCurrent ?
                         (<Tag color="#f50">
-                            Current Course
+                            Current
                         </Tag>)
                         :
                         (
-                            <Button
-                                type="primary"
-                                icon={<BookOutlined />}
-                                onClick={() => {
-                                    showConfirmSetCurrent(record)
-                                }}
-                            >
-                                Set Current
-                            </Button>
+                            <Tooltip title="Set this course to primary">
+                                <Button
+                                    type="primary"
+                                    icon={<BookOutlined />}
+                                    onClick={() => {
+                                        showConfirmSetCurrent(record)
+                                    }}>
+                                    Set</Button>
+                            </Tooltip>
                         )
                     }
-
                 </Space >
             ),
         },

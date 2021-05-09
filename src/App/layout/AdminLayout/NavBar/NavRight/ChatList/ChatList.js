@@ -41,7 +41,7 @@ const ChatList = (props) => {
         <Aux>
             <div className={listClass.join(' ')}>
                 <div className="h-list-header">
-                    <Search placeholder="Search ..." allowClear enterButton onClick={() => {
+                    <Search readOnly placeholder="Search ..." allowClear enterButton onClick={() => {
                         setContactOpen(true);
                     }} />
                 </div>

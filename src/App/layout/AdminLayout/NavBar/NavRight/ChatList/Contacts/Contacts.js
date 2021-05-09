@@ -111,7 +111,7 @@ const Contacts = (props) => {
                                     setScrollCtrRef(ref);
                                 }}>
                                 {listContacts.map((contact, index) => {
-                                    return <Contact key={index} contact={contact} clicked={() => {
+                                    return <Contact activeId={newContact?._id} key={index} contact={contact} clicked={() => {
                                         setNewOpen(true);
                                         setNewContact(contact);
                                     }} />

@@ -168,7 +168,7 @@ const Login = ({ history }) => {
                                 </Col>
                             </Row>
 
-                            <p className="mb-2 text-muted mt-4">Forgot password? <NavLink to="/auth/reset-password-1">Reset</NavLink></p>
+                            <p className="mb-2 text-muted mt-4">Forgot password? <NavLink to="/forgot">Reset</NavLink></p>
 
                         </div>
                     </div>
