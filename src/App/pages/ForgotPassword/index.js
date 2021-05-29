@@ -13,7 +13,7 @@ const SearchAccount = () => {
 
     const [load, setLoad] = useState(false);
 
-    const [errorMessage, setErrorMessage] = useState(false);
+    const [message, setMessage] = useState(null);
 
     const [isRequested, setRequested] = useState(false);
 
@@ -24,13 +24,21 @@ const SearchAccount = () => {
                 emailAddress: values.email,
             })
             .then((res) => {
+                notify.notifySuccess("Success", res.data.message);
+                setMessage({
+                    content: res.data.message,
+                    type: 'success'
+                });
                 setRequested(true);
             })
             .catch((error) => {
                 if (error.response.status !== 404) {
                     setRequested(true);
                 }
-                setErrorMessage(error.response.data.message);
+                setMessage({
+                    content: error.response.data.message,
+                    type: 'error'
+                });
             })
             .finally(() => {
                 setLoad(false);
@@ -51,11 +59,11 @@ const SearchAccount = () => {
                         <div className="card-body text-center">
 
                             <h3 className="mb-4">Find your account</h3>
-                            {errorMessage &&
+                            {message &&
                                 <Alert
                                     style={{ textAlign: 'start' }}
-                                    description={errorMessage}
-                                    type="error"
+                                    description={message.content}
+                                    type={message.type}
                                 />
                             }
 

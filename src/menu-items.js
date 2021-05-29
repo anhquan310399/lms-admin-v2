@@ -22,6 +22,20 @@ export default {
             icon: 'icon-navigation-2',
             children: [
                 {
+                    id: 'faculty',
+                    title: 'Faculty Manager',
+                    type: 'item',
+                    url: '/faculty',
+                    icon: 'feather icon-bookmark',
+                },
+                {
+                    id: 'curriculum',
+                    title: 'Curriculum Manager',
+                    type: 'item',
+                    url: '/curriculum',
+                    icon: 'feather icon-bookmark',
+                },
+                {
                     id: 'course',
                     title: 'Course Manager',
                     type: 'item',
