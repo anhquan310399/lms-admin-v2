@@ -5,51 +5,43 @@ import Aux from "../../../hoc/_Aux";
 import {
     ExclamationCircleOutlined,
     PlusOutlined,
+    EyeOutlined,
+    EyeInvisibleOutlined,
     DeleteOutlined,
     EditOutlined,
-    SearchOutlined,
-    EyeInvisibleOutlined,
-    DatabaseOutlined
+    SearchOutlined
 } from '@ant-design/icons';
 import * as notify from '../../../services/notify';
 import { getCookie } from '../../../services/localStorage';
 import axios from 'axios';
-import CurriculumDrawer from './CurriculumDrawer';
-import SubjectManager from './SubjectManager';
+import SubjectDrawer from './SubjectDrawer';
 import Highlighter from 'react-highlight-words';
 
-const { confirm } = Modal;
 const { Text } = Typography;
+const { confirm } = Modal;
 
-const CurriculumManager = () => {
-    const [drawerVisible, setDrawerVisible] = useState(false);
+const SubjectManager = () => {
+    const [visible, setVisible] = useState(false);
 
-    const [listCurriculums, setListCurriculums] = useState([]);
+    const [listSubject, setListSubject] = useState([]);
 
-    const [editCurriculum, setEditCurriculum] = useState({});
-
-    /**
-     * Curriculum manage subjects
-     */
-    const [cms, setCMS] = useState({});
-
-    const [subjectManagerVisible, setSubjectManagerVisible] = useState(false);
+    const [subject, setSubject] = useState({});
 
     const [loading, setLoading] = useState(false);
 
-    const handleAddResponses = (curriculum) => {
-        setListCurriculums([curriculum, ...listCurriculums]);
+    const handleAddResponses = (subject) => {
+        setListSubject([subject, ...listSubject]);
     }
 
-    const handleUpdateResponses = (curriculum) => {
-        const curriculums = [...listCurriculums];
-        const index = curriculums.findIndex(value => value._id === curriculum._id);
-        curriculums[index] = curriculum;
-        setListCurriculums(curriculums);
+    const handleUpdateResponses = (subject) => {
+        const subjects = [...listSubject];
+        const index = subjects.findIndex(value => value._id === subject._id);
+        subjects[index] = subject;
+        setListSubject(subjects);
     }
 
-    const handleDeleteResponses = (idCurriculum) => {
-        setListCurriculums(listCurriculums.filter(value => value._id !== idCurriculum));
+    const handleDeleteResponses = (idSubject) => {
+        setListSubject(listSubject.filter(value => value._id !== idSubject));
     }
 
     const handleResponses = (method, data) => {
@@ -65,10 +57,20 @@ const CurriculumManager = () => {
         }
     }
 
-    const deleteCurriculum = (id) => {
+    const lockSubject = (id) => {
         const token = getCookie("token");
         return axios
-            .delete(`${process.env.REACT_APP_API_URL}/admin/curriculum/${id}/`, {
+            .put(`${process.env.REACT_APP_API_URL}/admin/subject/${id}/hide`, {}, {
+                headers: {
+                    Authorization: token,
+                },
+            })
+    };
+
+    const deleteSubject = (id) => {
+        const token = getCookie("token");
+        return axios
+            .delete(`${process.env.REACT_APP_API_URL}/admin/subject/${id}/`, {
                 headers: {
                     Authorization: token,
                 },
@@ -77,7 +79,11 @@ const CurriculumManager = () => {
 
     const [totalRecords, setTotalRecords] = useState(0);
 
+    const [roleFilter, setRoleFilter] = useState(null);
+
     const handleTableChange = (pagination, filters) => {
+        const role = filters.role ? filters.role[0] : null;
+        setRoleFilter(role);
         const { current, pageSize } = pagination;
         setPageConfig({ page: current, pageSize });
     }
@@ -89,38 +95,36 @@ const CurriculumManager = () => {
 
     const [searchText, setSearchText] = useState("");
 
-    const getCurriculums = (page, pageSize, name) => {
-        const token = getCookie("token");
-        setLoading(true);
-        axios
-            .post(`${process.env.REACT_APP_API_URL}/admin/curriculum/filter`,
-                {
-                    page, pageSize, name
-                },
-                {
-                    headers: {
-                        Authorization: token,
-                    },
-                })
-            .then((res) => {
-                const data = [];
-                const arr = res.data.curriculums;
-                arr.forEach((element) => {
-                    data.push({ key: data.length, ...element });
-                });
-                setLoading(false);
-                setListCurriculums(data);
-                setTotalRecords(res.data.total);
-            })
-            .catch(err => {
-                handleError(err);
-            });
-    };
-
     useEffect(() => {
-        getCurriculums(pageConfig.page, pageConfig.pageSize, searchText);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pageConfig, searchText]);
+        const getSubjects = (page, pageSize, role, name) => {
+            const token = getCookie("token");
+            setLoading(true);
+            axios
+                .post(`${process.env.REACT_APP_API_URL}/admin/subject/filter`,
+                    {
+                        page, pageSize, role, name
+                    },
+                    {
+                        headers: {
+                            Authorization: token,
+                        },
+                    })
+                .then((res) => {
+                    const data = [];
+                    const arr = res.data.allSubject;
+                    arr.forEach((element) => {
+                        data.push({ key: data.length, ...element });
+                    });
+                    setLoading(false);
+                    setListSubject(data);
+                    setTotalRecords(res.data.total);
+                })
+                .catch(err => {
+                    handleError(err);
+                });
+        };
+        getSubjects(pageConfig.page, pageConfig.pageSize, roleFilter, searchText);
+    }, [pageConfig, roleFilter, searchText]);
 
     const pagination = {
         defaultCurrent: pageConfig.page,
@@ -196,25 +200,52 @@ const CurriculumManager = () => {
             },
         },
         {
-            title: 'Name',
+            title: 'Subject name',
             dataIndex: 'name',
             key: 'name',
             ...getColumnSearchProps('name')
         },
         {
-            title: 'Code',
-            dataIndex: 'code',
-            key: 'code',
-        },
-        {
-            title: 'Faculty',
-            dataIndex: 'faculty',
-            key: 'faculty',
+            title: 'Lecture',
+            dataIndex: 'lecture',
+            key: 'lecture',
             render: (text, record) => {
+                let name = `${record.lecture.firstName} ${record.lecture.lastName}`
                 return (
-                    <Text strong > {record.faculty.name}</Text>
+                    <Text strong underline> {name}</Text>
                 )
             },
+        },
+        {
+            title: 'Course',
+            dataIndex: 'course',
+            key: 'course',
+            render: (text, record) => {
+                return (
+                    <Text strong > {record.course.name}</Text>
+                )
+            },
+        },
+        {
+            title: 'Students',
+            key: 'studentCount',
+            dataIndex: 'studentCount'
+        },
+        {
+            title: 'Role',
+            key: 'role',
+            dataIndex: 'config',
+            render: (text, record) => {
+                const color = record.config.role === 'public' ? 'success' : 'error';
+                return (
+                    <Tag color={color}>{record.config.role}</Tag>
+                )
+            },
+            filterMultiple: false,
+            filters: [
+                { text: 'Public', value: 'public' },
+                { text: 'Private', value: 'private' },
+            ],
         },
         {
             title: 'Action',
@@ -226,32 +257,31 @@ const CurriculumManager = () => {
                             type="default"
                             icon={<EditOutlined />}
                             onClick={() => {
-                                setEditCurriculum(record);
+                                setSubject(record);
                                 showDrawer();
                             }}
                         >
                             {/* Edit */}
                         </Button>
                     </Tooltip>
-                    <Tooltip title="Delete Curriculum">
+
+                    <Tooltip title={record.isDeleted ? 'Unlock' : 'Lock'}>
                         <Button
-                            type="danger"
-                            icon={<DeleteOutlined />}
-                            onClick={() => { showConfirmDelete(record) }}
+                            type='primary'
+                            icon={record.isDeleted ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                            onClick={() => { showConfirmLockSubject(record) }}
                         >
-                            {/* Delete */}
+                            {/* {record.isDeleted ? 'Unlock' : 'Lock'} */}
                         </Button>
                     </Tooltip>
 
-                    <Tooltip title="Show subjects">
+                    <Tooltip title="Delete user">
                         <Button
-                            type="primary"
-                            icon={<DatabaseOutlined />}
-                            onClick={() => {
-                                setCMS(record);
-                                setSubjectManagerVisible(true);
-                            }}
+                            type="danger"
+                            icon={<DeleteOutlined />}
+                            onClick={() => { showConfirmDeleteSubject(record) }}
                         >
+                            {/* Delete */}
                         </Button>
                     </Tooltip>
                 </Space >
@@ -259,14 +289,35 @@ const CurriculumManager = () => {
         },
     ];
 
-    const showConfirmDelete = (record) => {
+    const showConfirmLockSubject = (record) => {
         confirm({
-            title: `Do you Want to Delete this curriculum : ${record.name}?`,
+            title: `Do you Want to ${record.isDeleted ? 'Unlock' : 'Lock'} this subject : ${record.name}?`,
             icon: <ExclamationCircleOutlined />,
             onOk() {
                 // return deleteUser(record._id);
                 return new Promise((resolve, reject) => {
-                    deleteCurriculum(record._id)
+                    lockSubject(record._id)
+                        .then((res) => {
+                            notify.notifySuccess("Success", res.data.message)
+                            handleUpdateResponses(res.data.subject);
+                            resolve();
+                        }).catch(err => {
+                            handleError(err);
+                            resolve();
+                        });
+                });
+            },
+        });
+    }
+
+    const showConfirmDeleteSubject = (record) => {
+        confirm({
+            title: `Do you Want to Delete this subject : ${record.name}?`,
+            icon: <ExclamationCircleOutlined />,
+            onOk() {
+                // return deleteUser(record._id);
+                return new Promise((resolve, reject) => {
+                    deleteSubject(record._id)
                         .then((res) => {
                             notify.notifySuccess("Success", res.data.message)
                             handleDeleteResponses(record._id);
@@ -285,7 +336,7 @@ const CurriculumManager = () => {
     }
 
     const showDrawer = () => {
-        setDrawerVisible(true);
+        setVisible(true);
     };
 
     return (
@@ -294,16 +345,16 @@ const CurriculumManager = () => {
                 <Col>
                     <Card>
                         <Card.Header>
-                            <Card.Title as="h5">Curriculum Manager</Card.Title>
+                            <Card.Title as="h5">Subject Manager</Card.Title>
                             <span className="d-block m-t-5"></span>
                             <Button type="primary" onClick={showDrawer}
                                 icon={<PlusOutlined />}
-                            >Add curriculum</Button>
+                            >Add subject</Button>
                         </Card.Header>
                         <Card.Body>
                             <Table
                                 bordered columns={columns}
-                                dataSource={listCurriculums}
+                                dataSource={listSubject}
                                 pagination={pagination}
                                 loading={loading}
                                 onChange={handleTableChange} />
@@ -311,15 +362,9 @@ const CurriculumManager = () => {
                     </Card>
                 </Col>
             </Row>
-
-            <CurriculumDrawer handleResponses={handleResponses} visible={drawerVisible} setVisible={setDrawerVisible} curriculum={editCurriculum} setCurriculum={setEditCurriculum} />
-
-            {subjectManagerVisible && cms &&
-
-                <SubjectManager curriculum={cms} visible={subjectManagerVisible} setVisible={setSubjectManagerVisible} />
-            }
+            <SubjectDrawer handleResponses={handleResponses} visible={visible} setVisible={setVisible} subject={subject} setSubject={setSubject} />
         </Aux>
     );
 }
 
-export default CurriculumManager;
+export default SubjectManager;

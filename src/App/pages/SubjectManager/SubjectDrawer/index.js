@@ -1,10 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import 'antd/dist/antd.css';
-import { Drawer, Form, Button, Input } from 'antd';
+import { Drawer, Form, Button, Input, Select, InputNumber } from 'antd';
 import { getCookie } from "../../../../services/localStorage.js";
 import axios from "axios";
 import * as notify from "../../../../services/notify";
+
+const { Option } = Select;
 
 const layout = {
     labelCol: {
@@ -16,17 +17,16 @@ const layout = {
 };
 
 const validateMessages = {
-    // eslint-disable-next-line no-template-curly-in-string
     required: "${label} is required!",
 };
 
 
-const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses }) => {
+const SubjectDrawer = ({ visible, setVisible, subject, setSubject, handleResponses }) => {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
 
     const onClose = () => {
-        setCourse({});
+        setSubject({});
         form.resetFields();
         setVisible(false);
     };
@@ -34,18 +34,18 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
     const onFinish = async (values) => {
         setLoading(true);
         const token = getCookie("token");
-        if (!course._id) {
-            createCourse(token, values);
+        if (!subject._id) {
+            createSubject(token, values);
 
         } else {
-            updateCourse(token, values);
+            updateSubject(token, values);
         }
 
     }
 
-    const updateCourse = (token, values) => {
+    const updateSubject = (token, values) => {
         axios
-            .put(`${process.env.REACT_APP_API_URL}/admin/course/${course._id}`, values, {
+            .put(`${process.env.REACT_APP_API_URL}/admin/subject/${subject._id}`, values, {
                 headers: {
                     Authorization: token,
                 },
@@ -54,8 +54,8 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
                 notify.notifySuccess("Success", res.data.message);
                 setLoading(false);
                 setVisible(false);
-                handleResponses("update", res.data.course);
-                setCourse({});
+                handleResponses("update", res.data.subject);
+                setSubject({});
                 form.resetFields();
             }).catch(error => {
                 notify.notifyError("Error!", error.response.data.message)
@@ -63,17 +63,18 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
             });
     }
 
-    const createCourse = (token, values) => {
+    const createSubject = (token, values) => {
         axios
-            .post(`${process.env.REACT_APP_API_URL}/admin/course/`, values, {
+            .post(`${process.env.REACT_APP_API_URL}/admin/subject/`, values, {
                 headers: {
                     Authorization: token,
                 },
             })
             .then((res) => {
+                console.log(res.data.subject);
                 notify.notifySuccess("Success", res.data.message)
                 setLoading(false);
-                handleResponses("add", res.data.course);
+                handleResponses("add", res.data.subject);
                 setVisible(false);
                 form.resetFields();
             }).catch(error => {
@@ -84,14 +85,17 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
 
     useEffect(() => {
         form.setFieldsValue({
-            name: course?.name,
+            name: subject?.name,
+            code: subject?.code,
+            credit: subject?.credit,
         })
-    }, [course])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [subject])
 
     return (
         <Button>
             <Drawer
-                title={course._id ? "Update course" : "Create a new course"}
+                title={subject._id ? "Update subject" : "Create a new subject"}
                 width={500}
                 onClose={onClose}
                 closable={false}
@@ -101,14 +105,14 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
                     <div style={{ textAlign: 'right', }} >
                         <Button onClick={onClose} style={{ marginRight: 8 }}>
                             Cancel</Button>
-                        <Button key="submit" form="frm" htmlType="submit" type="primary" loading={loading}>
+                        <Button key="submit" form="subjectForm" htmlType="submit" type="primary" loading={loading}>
                             Submit</Button>
                     </div>
                 }
             >
                 <Form
                     form={form}
-                    id="frm"
+                    id="subjectForm"
                     {...layout}
                     onFinish={onFinish}
                     validateMessages={validateMessages}
@@ -122,10 +126,28 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
                             }
                         ]}>
 
-                        < Input placeholder="Enter name of course" />
+                        < Input placeholder="Enter name of subject" />
 
                     </Form.Item>
 
+                    <Form.Item
+                        name={"code"}
+                        label="Code"
+                        rules={[
+                            {
+                                required: true
+                            }
+                        ]}>
+
+                        < Input placeholder="Enter code of subject" />
+                    </Form.Item>
+
+                    <Form.Item
+                        name={"credit"}
+                        label="Credit">
+
+                        < InputNumber min={1} defaultValue={1} placeholder="Enter credit of subject" />
+                    </Form.Item>
                 </Form>
             </Drawer>
         </Button>
@@ -133,4 +155,4 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
 };
 
 
-export default CourseDrawer;
+export default SubjectDrawer;

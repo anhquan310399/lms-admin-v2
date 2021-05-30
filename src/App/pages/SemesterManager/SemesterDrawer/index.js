@@ -21,12 +21,12 @@ const validateMessages = {
 };
 
 
-const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleResponses }) => {
+const CourseDrawer = ({ visible, setVisible, semester, setSemester, handleResponses }) => {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
 
     const onClose = () => {
-        setFaculty({});
+        setSemester({});
         form.resetFields();
         setVisible(false);
     };
@@ -34,19 +34,18 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
     const onFinish = async (values) => {
         setLoading(true);
         const token = getCookie("token");
-
-        if (!faculty._id) {
-            createFaculty(token, values);
+        if (!semester._id) {
+            createSemester(token, values);
 
         } else {
-            updateFaculty(token, values);
+            updateSemester(token, values);
         }
 
     }
 
-    const updateFaculty = (token, values) => {
+    const updateSemester = (token, values) => {
         axios
-            .put(`${process.env.REACT_APP_API_URL}/admin/faculty/${faculty._id}`, values, {
+            .put(`${process.env.REACT_APP_API_URL}/admin/semester/${semester._id}`, values, {
                 headers: {
                     Authorization: token,
                 },
@@ -55,8 +54,8 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
                 notify.notifySuccess("Success", res.data.message);
                 setLoading(false);
                 setVisible(false);
-                handleResponses("update", res.data.faculty);
-                setFaculty({});
+                handleResponses("update", res.data.semester);
+                setSemester({});
                 form.resetFields();
             }).catch(error => {
                 notify.notifyError("Error!", error.response.data.message)
@@ -64,9 +63,9 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
             });
     }
 
-    const createFaculty = (token, values) => {
+    const createSemester = (token, values) => {
         axios
-            .post(`${process.env.REACT_APP_API_URL}/admin/faculty/`, values, {
+            .post(`${process.env.REACT_APP_API_URL}/admin/semester/`, values, {
                 headers: {
                     Authorization: token,
                 },
@@ -74,7 +73,7 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
             .then((res) => {
                 notify.notifySuccess("Success", res.data.message)
                 setLoading(false);
-                handleResponses("add", res.data.faculty);
+                handleResponses("add", res.data.semester);
                 setVisible(false);
                 form.resetFields();
             }).catch(error => {
@@ -85,15 +84,14 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
 
     useEffect(() => {
         form.setFieldsValue({
-            name: faculty?.name,
-            code: faculty?.code,
+            name: semester?.name,
         })
-    }, [faculty])
+    }, [semester])
 
     return (
         <Button>
             <Drawer
-                title={faculty._id ? "Update faculty" : "Create a new faculty"}
+                title={semester._id ? "Update semester" : "Create a new semester"}
                 width={500}
                 onClose={onClose}
                 closable={false}
@@ -124,29 +122,15 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
                             }
                         ]}>
 
-                        < Input placeholder="Enter name of faculty" />
-
-                    </Form.Item>
-
-                    <Form.Item
-                        name={"code"}
-                        label="Code"
-                        rules={[
-                            {
-                                required: true
-                            }
-                        ]}>
-
-                        < Input type="number" placeholder="Enter code of faculty" />
+                        < Input placeholder="Enter name of course" />
 
                     </Form.Item>
 
                 </Form>
-
             </Drawer>
         </Button>
     );
 };
 
 
-export default FacultyDrawer;
+export default CourseDrawer;

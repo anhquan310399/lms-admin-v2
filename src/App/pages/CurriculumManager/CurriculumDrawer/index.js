@@ -28,7 +28,7 @@ const CurriculumDrawer = ({ visible, setVisible, curriculum, setCurriculum, hand
 
     const [subjects, setSubjects] = useState([]);
 
-    const [classes, setClasses] = useState([]);
+    const [faculties, setFaculties] = useState([]);
 
     const getListSubjects = (token) => {
         axios
@@ -46,16 +46,16 @@ const CurriculumDrawer = ({ visible, setVisible, curriculum, setCurriculum, hand
             });
     }
 
-    const getListClasses = (token) => {
+    const getListFaculties = (token) => {
         axios
-            .get(`${process.env.REACT_APP_API_URL}/admin/class`,
+            .get(`${process.env.REACT_APP_API_URL}/admin/faculty`,
                 {
                     headers: {
                         Authorization: token,
                     },
                 })
             .then((res) => {
-                setClasses(res.data.classes);
+                setFaculties(res.data.faculties);
             })
             .catch(err => {
 
@@ -65,7 +65,7 @@ const CurriculumDrawer = ({ visible, setVisible, curriculum, setCurriculum, hand
     useEffect(() => {
         const token = getCookie("token");
         getListSubjects(token);
-        getListClasses(token);
+        getListFaculties(token);
     }, [])
 
     const onClose = () => {
@@ -130,7 +130,7 @@ const CurriculumDrawer = ({ visible, setVisible, curriculum, setCurriculum, hand
         form.setFieldsValue({
             name: curriculum?.name,
             code: curriculum?.code,
-            subjects: curriculum?.subjects,
+            idFaculty: curriculum?.idFaculty,
             classes: curriculum?.classes,
         })
     }, [curriculum])
@@ -186,6 +186,27 @@ const CurriculumDrawer = ({ visible, setVisible, curriculum, setCurriculum, hand
 
                     </Form.Item>
 
+
+                    <Form.Item
+                        name={"idFaculty"}
+                        label="Faculty"
+                        rules={[
+                            {
+                                required: true
+                            }
+                        ]}>
+                        <Select
+                            allowClear
+                            placeholder="Select faculty of curriculum"
+                        >
+                            {faculties.map(faculty => {
+                                return <Option key={faculty._id}>{faculty.name}</Option>
+                            })}
+
+                        </Select>
+
+                    </Form.Item>
+
                     <Form.Item
                         name={"subjects"}
                         label="Subjects">
@@ -196,22 +217,6 @@ const CurriculumDrawer = ({ visible, setVisible, curriculum, setCurriculum, hand
                         >
                             {subjects.map(subject => {
                                 return <Option key={subject._id}>{subject.name}</Option>
-                            })}
-
-                        </Select>
-
-                    </Form.Item>
-
-                    <Form.Item
-                        name={"classes"}
-                        label="Classes">
-                        <Select
-                            mode="multiple"
-                            allowClear
-                            placeholder="Select class of curriculum"
-                        >
-                            {classes.map(element => {
-                                return <Option key={element._id}>{element.name}</Option>
                             })}
 
                         </Select>

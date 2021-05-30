@@ -12,7 +12,7 @@ import {
 import * as notify from '../../../services/notify';
 import { getCookie } from '../../../services/localStorage';
 import axios from 'axios';
-import CreateDrawer from './CreateDrawer/drawer';
+import CreateDrawer from './CreateDrawer'
 import Highlighter from 'react-highlight-words';
 
 const { confirm } = Modal;

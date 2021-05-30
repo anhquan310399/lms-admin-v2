@@ -1,10 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import 'antd/dist/antd.css';
-import { Drawer, Form, Button, Input } from 'antd';
+import { Drawer, Form, Button, Input, Select, InputNumber } from 'antd';
 import { getCookie } from "../../../../services/localStorage.js";
 import axios from "axios";
 import * as notify from "../../../../services/notify";
+
+const { Option } = Select;
 
 const layout = {
     labelCol: {
@@ -16,17 +17,16 @@ const layout = {
 };
 
 const validateMessages = {
-    // eslint-disable-next-line no-template-curly-in-string
     required: "${label} is required!",
 };
 
 
-const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleResponses }) => {
+const SubjectDrawer = ({ visible, setVisible, cls, setClass, handleResponses }) => {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
 
     const onClose = () => {
-        setFaculty({});
+        setClass({});
         form.resetFields();
         setVisible(false);
     };
@@ -34,19 +34,41 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
     const onFinish = async (values) => {
         setLoading(true);
         const token = getCookie("token");
-
-        if (!faculty._id) {
-            createFaculty(token, values);
+        if (!cls._id) {
+            createClass(token, values);
 
         } else {
-            updateFaculty(token, values);
+            updateClass(token, values);
         }
 
     }
 
-    const updateFaculty = (token, values) => {
+    const [curriculums, setCurriculums] = useState([]);
+
+    const getListCurriculum = (token) => {
         axios
-            .put(`${process.env.REACT_APP_API_URL}/admin/faculty/${faculty._id}`, values, {
+            .get(`${process.env.REACT_APP_API_URL}/admin/curriculum`,
+                {
+                    headers: {
+                        Authorization: token,
+                    },
+                })
+            .then((res) => {
+                setCurriculums(res.data.curriculums);
+            })
+            .catch(err => {
+
+            });
+    }
+
+    useEffect(() => {
+        const token = getCookie("token");
+        getListCurriculum(token);
+    }, [])
+
+    const updateClass = (token, values) => {
+        axios
+            .put(`${process.env.REACT_APP_API_URL}/admin/class/${cls._id}`, values, {
                 headers: {
                     Authorization: token,
                 },
@@ -55,8 +77,8 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
                 notify.notifySuccess("Success", res.data.message);
                 setLoading(false);
                 setVisible(false);
-                handleResponses("update", res.data.faculty);
-                setFaculty({});
+                handleResponses("update", res.data.class);
+                setClass({});
                 form.resetFields();
             }).catch(error => {
                 notify.notifyError("Error!", error.response.data.message)
@@ -64,17 +86,18 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
             });
     }
 
-    const createFaculty = (token, values) => {
+    const createClass = (token, values) => {
         axios
-            .post(`${process.env.REACT_APP_API_URL}/admin/faculty/`, values, {
+            .post(`${process.env.REACT_APP_API_URL}/admin/class/`, values, {
                 headers: {
                     Authorization: token,
                 },
             })
             .then((res) => {
+                console.log(res.data.subject);
                 notify.notifySuccess("Success", res.data.message)
                 setLoading(false);
-                handleResponses("add", res.data.faculty);
+                handleResponses("add", res.data.class);
                 setVisible(false);
                 form.resetFields();
             }).catch(error => {
@@ -85,15 +108,17 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
 
     useEffect(() => {
         form.setFieldsValue({
-            name: faculty?.name,
-            code: faculty?.code,
+            name: cls?.name,
+            code: cls?.code,
+            idCurriculum: cls?.idCurriculum
         })
-    }, [faculty])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cls])
 
     return (
         <Button>
             <Drawer
-                title={faculty._id ? "Update faculty" : "Create a new faculty"}
+                title={cls._id ? "Update class" : "Create a new class"}
                 width={500}
                 onClose={onClose}
                 closable={false}
@@ -103,14 +128,14 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
                     <div style={{ textAlign: 'right', }} >
                         <Button onClick={onClose} style={{ marginRight: 8 }}>
                             Cancel</Button>
-                        <Button key="submit" form="frm" htmlType="submit" type="primary" loading={loading}>
+                        <Button key="submit" form="subjectForm" htmlType="submit" type="primary" loading={loading}>
                             Submit</Button>
                     </div>
                 }
             >
                 <Form
                     form={form}
-                    id="frm"
+                    id="subjectForm"
                     {...layout}
                     onFinish={onFinish}
                     validateMessages={validateMessages}
@@ -124,7 +149,7 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
                             }
                         ]}>
 
-                        < Input placeholder="Enter name of faculty" />
+                        < Input placeholder="Enter name of subject" />
 
                     </Form.Item>
 
@@ -137,16 +162,34 @@ const FacultyDrawer = ({ visible, setVisible, faculty, setFaculty, handleRespons
                             }
                         ]}>
 
-                        < Input type="number" placeholder="Enter code of faculty" />
+                        < Input placeholder="Enter code of subject" />
+                    </Form.Item>
+
+                    <Form.Item
+                        name={"idCurriculum"}
+                        label="Curriculum"
+                        rules={[
+                            {
+                                required: true
+                            }
+                        ]}>
+                        <Select
+                            allowClear
+                            placeholder="Select curriculum of class"
+                        >
+                            {curriculums.map(curriculum => {
+                                return <Option key={curriculum._id}>{curriculum.name}</Option>
+                            })}
+
+                        </Select>
 
                     </Form.Item>
 
                 </Form>
-
             </Drawer>
         </Button>
     );
 };
 
 
-export default FacultyDrawer;
+export default SubjectDrawer;

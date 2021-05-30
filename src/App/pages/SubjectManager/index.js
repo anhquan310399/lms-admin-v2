@@ -1,43 +1,47 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card } from 'react-bootstrap';
-import { Modal, Space, Table, Button, Input, Tag, Tooltip } from 'antd';
+import { Modal, Space, Table, Button, Typography, Input, Tooltip } from 'antd';
 import Aux from "../../../hoc/_Aux";
 import {
     ExclamationCircleOutlined,
     PlusOutlined,
+    EyeOutlined,
+    EyeInvisibleOutlined,
+    DeleteOutlined,
     EditOutlined,
-    SearchOutlined,
-    BookOutlined,
+    SearchOutlined
 } from '@ant-design/icons';
 import * as notify from '../../../services/notify';
 import { getCookie } from '../../../services/localStorage';
 import axios from 'axios';
-import CourseDrawer from './CourseDrawer/drawer';
+import SubjectDrawer from './SubjectDrawer';
 import Highlighter from 'react-highlight-words';
 
+const { Text } = Typography;
 const { confirm } = Modal;
 
-const CourseManager = () => {
+const SubjectManager = () => {
     const [visible, setVisible] = useState(false);
 
-    const [listCourses, setListCourses] = useState([]);
+    const [listSubject, setListSubject] = useState([]);
 
-    const [course, setCourse] = useState({});
+    const [subject, setSubject] = useState({});
 
     const [loading, setLoading] = useState(false);
 
-    const [reload, setReload] = useState(false);
-
-    const handleAddResponses = (course) => {
-        setListCourses([course, ...listCourses]);
+    const handleAddResponses = (subject) => {
+        setListSubject([subject, ...listSubject]);
     }
 
-    const handleUpdateResponses = (course) => {
-        const courses = [...listCourses];
-        const index = courses.findIndex(value => value._id === course._id);
-        courses[index] = course;
-        setListCourses(courses);
+    const handleUpdateResponses = (subject) => {
+        const subjects = [...listSubject];
+        const index = subjects.findIndex(value => value._id === subject._id);
+        subjects[index] = subject;
+        setListSubject(subjects);
+    }
+
+    const handleDeleteResponses = (idSubject) => {
+        setListSubject(listSubject.filter(value => value._id !== idSubject));
     }
 
     const handleResponses = (method, data) => {
@@ -53,10 +57,20 @@ const CourseManager = () => {
         }
     }
 
-    const setCurrentCourse = (id) => {
+    const lockSubject = (id) => {
         const token = getCookie("token");
         return axios
-            .put(`${process.env.REACT_APP_API_URL}/admin/course/${id}/force`, {}, {
+            .put(`${process.env.REACT_APP_API_URL}/admin/subject/${id}/lock`, {}, {
+                headers: {
+                    Authorization: token,
+                },
+            })
+    };
+
+    const deleteSubject = (id) => {
+        const token = getCookie("token");
+        return axios
+            .delete(`${process.env.REACT_APP_API_URL}/admin/subject/${id}/`, {
                 headers: {
                     Authorization: token,
                 },
@@ -65,8 +79,7 @@ const CourseManager = () => {
 
     const [totalRecords, setTotalRecords] = useState(0);
 
-
-    const handleTableChange = (pagination) => {
+    const handleTableChange = (pagination, filters) => {
         const { current, pageSize } = pagination;
         setPageConfig({ page: current, pageSize });
     }
@@ -79,8 +92,35 @@ const CourseManager = () => {
     const [searchText, setSearchText] = useState("");
 
     useEffect(() => {
-        getCourses(pageConfig.page, pageConfig.pageSize, searchText);
-    }, [pageConfig, searchText, reload]);
+        const getSubjects = (page, pageSize, role, name) => {
+            const token = getCookie("token");
+            setLoading(true);
+            axios
+                .post(`${process.env.REACT_APP_API_URL}/admin/subject/filter`,
+                    {
+                        page, pageSize, role, name
+                    },
+                    {
+                        headers: {
+                            Authorization: token,
+                        },
+                    })
+                .then((res) => {
+                    const data = [];
+                    const arr = res.data.subjects;
+                    arr.forEach((element) => {
+                        data.push({ key: data.length, ...element });
+                    });
+                    setLoading(false);
+                    setListSubject(data);
+                    setTotalRecords(res.data.total);
+                })
+                .catch(err => {
+                    handleError(err);
+                });
+        };
+        getSubjects(pageConfig.page, pageConfig.pageSize, searchText);
+    }, [pageConfig, searchText]);
 
     const pagination = {
         defaultCurrent: pageConfig.page,
@@ -148,106 +188,103 @@ const CourseManager = () => {
         setSearchText('');
     };
 
-    const getCourses = (page, pageSize, name) => {
-        const token = getCookie("token");
-        setLoading(true);
-        axios
-            .post(`${process.env.REACT_APP_API_URL}/admin/course/filter`,
-                {
-                    page, pageSize, name
-                },
-                {
-                    headers: {
-                        Authorization: token,
-                    },
-                })
-            .then((res) => {
-                const data = [];
-                const arr = res.data.courses;
-                arr.forEach((element) => {
-                    data.push({ key: data.length, ...element });
-                });
-                setLoading(false);
-                setListCourses(data);
-                setTotalRecords(res.data.total);
-            })
-            .catch(err => {
-                handleError(err);
-            });
-    };
-
     const columns = [
         {
             title: '#',
             render: (text, record, index) => {
                 return (pageConfig.page - 1) * pageConfig.pageSize + index + 1
             },
-            responsive: ['md'],
         },
         {
-            title: 'Course name',
+            title: 'Name',
             dataIndex: 'name',
             key: 'name',
-            ...getColumnSearchProps('name'),
+            ...getColumnSearchProps('name')
         },
-
         {
-            title: 'Subjects',
-            key: 'subjects',
-            dataIndex: 'subjects',
-            responsive: ['md'],
+            title: 'Code',
+            dataIndex: 'code',
+            key: 'code',
+        },
+        {
+            title: 'Credit',
+            dataIndex: 'credit',
+            key: 'credit',
         },
         {
             title: 'Action',
             key: 'action',
             render: (text, record) => (
                 <Space size="middle">
-                    <Tooltip title="Edit this Course">
+                    <Tooltip title="Edit this subject">
                         <Button
                             type="default"
                             icon={<EditOutlined />}
                             onClick={() => {
-                                setCourse(record);
+                                setSubject(record);
                                 showDrawer();
                             }}
                         >
-
+                            {/* Edit */}
                         </Button>
                     </Tooltip>
 
-                    {record.isCurrent ?
-                        (<Tag color="#f50">
-                            Current
-                        </Tag>)
-                        :
-                        (
-                            <Tooltip title="Set this course to primary">
-                                <Button
-                                    type="primary"
-                                    icon={<BookOutlined />}
-                                    onClick={() => {
-                                        showConfirmSetCurrent(record)
-                                    }}>
-                                    Set</Button>
-                            </Tooltip>
-                        )
-                    }
+                    <Tooltip title={record.isDeleted ? 'Unlock' : 'Lock'}>
+                        <Button
+                            type='primary'
+                            icon={record.isDeleted ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                            onClick={() => { showConfirmLockSubject(record) }}
+                        >
+                            {/* {record.isDeleted ? 'Unlock' : 'Lock'} */}
+                        </Button>
+                    </Tooltip>
+
+                    <Tooltip title="Delete subject">
+                        <Button
+                            type="danger"
+                            icon={<DeleteOutlined />}
+                            onClick={() => { showConfirmDeleteSubject(record) }}
+                        >
+                            {/* Delete */}
+                        </Button>
+                    </Tooltip>
                 </Space >
             ),
         },
     ];
 
-    const showConfirmSetCurrent = (record) => {
+    const showConfirmLockSubject = (record) => {
         confirm({
-            title: `Do you Want to set course "${record.name}" to current course?`,
+            title: `Do you Want to ${record.isDeleted ? 'Unlock' : 'Lock'} this subject : ${record.name}?`,
             icon: <ExclamationCircleOutlined />,
             onOk() {
                 // return deleteUser(record._id);
                 return new Promise((resolve, reject) => {
-                    setCurrentCourse(record._id)
+                    lockSubject(record._id)
                         .then((res) => {
                             notify.notifySuccess("Success", res.data.message)
-                            setReload(!reload);
+                            handleUpdateResponses(res.data.subject);
+                            resolve();
+                        }).catch(err => {
+                            handleError(err);
+                            resolve();
+                        });
+                });
+            },
+        });
+    }
+
+    const showConfirmDeleteSubject = (record) => {
+        confirm({
+            title: `Do you Want to Delete this subject : ${record.name}?`,
+            icon: <ExclamationCircleOutlined />,
+            onOk() {
+                // return deleteUser(record._id);
+                return new Promise((resolve, reject) => {
+                    deleteSubject(record._id)
+                        .then((res) => {
+                            notify.notifySuccess("Success", res.data.message)
+                            handleDeleteResponses(record._id);
                             resolve();
                         }).catch(err => {
                             handleError(err);
@@ -259,8 +296,7 @@ const CourseManager = () => {
     }
 
     const handleError = (error) => {
-        console.log(error);
-        notify.notifyError("Error", error?.response?.data?.message)
+        notify.notifyError("Error", error.response.data.message)
     }
 
     const showDrawer = () => {
@@ -273,17 +309,16 @@ const CourseManager = () => {
                 <Col>
                     <Card>
                         <Card.Header>
-                            <Card.Title as="h5">Course Manager</Card.Title>
+                            <Card.Title as="h5">Subject Manager</Card.Title>
                             <span className="d-block m-t-5"></span>
                             <Button type="primary" onClick={showDrawer}
                                 icon={<PlusOutlined />}
-                            >Add Course</Button>
+                            >Add subject</Button>
                         </Card.Header>
                         <Card.Body>
                             <Table
-                                bordered
-                                columns={columns}
-                                dataSource={listCourses}
+                                bordered columns={columns}
+                                dataSource={listSubject}
                                 pagination={pagination}
                                 loading={loading}
                                 onChange={handleTableChange} />
@@ -291,9 +326,9 @@ const CourseManager = () => {
                     </Card>
                 </Col>
             </Row>
-            <CourseDrawer handleResponses={handleResponses} visible={visible} setVisible={setVisible} course={course} setCourse={setCourse} />
+            <SubjectDrawer handleResponses={handleResponses} visible={visible} setVisible={setVisible} subject={subject} setSubject={setSubject} />
         </Aux>
     );
 }
 
-export default CourseManager;
+export default SubjectManager;

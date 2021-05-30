@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card } from 'react-bootstrap';
-import { Modal, Space, Table, Button, Typography, Tag, Input, Tooltip } from 'antd';
+import { Modal, Space, Table, Button, Typography, Input, Tooltip } from 'antd';
 import Aux from "../../../hoc/_Aux";
 import {
     ExclamationCircleOutlined,
@@ -9,39 +9,44 @@ import {
     EyeInvisibleOutlined,
     DeleteOutlined,
     EditOutlined,
-    SearchOutlined
+    SearchOutlined,
+    DatabaseOutlined
 } from '@ant-design/icons';
 import * as notify from '../../../services/notify';
 import { getCookie } from '../../../services/localStorage';
 import axios from 'axios';
-import SubjectDrawer from './SubjectDrawer/drawer';
+import ClassDrawer from './ClassDrawer';
 import Highlighter from 'react-highlight-words';
+import StudentManager from './StudentManager';
 
 const { Text } = Typography;
 const { confirm } = Modal;
 
 const SubjectManager = () => {
-    const [visible, setVisible] = useState(false);
+    const [isDrawerVisible, setDrawerVisible] = useState(false);
 
-    const [listSubject, setListSubject] = useState([]);
+    const [listClasses, setListClasses] = useState([]);
 
-    const [subject, setSubject] = useState({});
+    const [editClass, setEditClass] = useState({});
 
     const [loading, setLoading] = useState(false);
 
-    const handleAddResponses = (subject) => {
-        setListSubject([subject, ...listSubject]);
+    /**
+     * Class manage student
+     */
+    const [manageStudent, setManageStudent] = useState({});
+
+    const [isManageStudent, setManageStudentVisible] = useState(false);
+
+    const handleAddResponses = (cls) => {
+        setListClasses([cls, ...listClasses]);
     }
 
-    const handleUpdateResponses = (subject) => {
-        const subjects = [...listSubject];
-        const index = subjects.findIndex(value => value._id === subject._id);
-        subjects[index] = subject;
-        setListSubject(subjects);
-    }
-
-    const handleDeleteResponses = (idSubject) => {
-        setListSubject(listSubject.filter(value => value._id !== idSubject));
+    const handleUpdateResponses = (cls) => {
+        const classes = [...listClasses];
+        const index = classes.findIndex(value => value._id === cls._id);
+        classes[index] = cls;
+        setListClasses(classes);
     }
 
     const handleResponses = (method, data) => {
@@ -57,33 +62,9 @@ const SubjectManager = () => {
         }
     }
 
-    const lockSubject = (id) => {
-        const token = getCookie("token");
-        return axios
-            .put(`${process.env.REACT_APP_API_URL}/admin/subject/${id}/hide`, {}, {
-                headers: {
-                    Authorization: token,
-                },
-            })
-    };
-
-    const deleteSubject = (id) => {
-        const token = getCookie("token");
-        return axios
-            .delete(`${process.env.REACT_APP_API_URL}/admin/subject/${id}/`, {
-                headers: {
-                    Authorization: token,
-                },
-            })
-    };
-
     const [totalRecords, setTotalRecords] = useState(0);
 
-    const [roleFilter, setRoleFilter] = useState(null);
-
     const handleTableChange = (pagination, filters) => {
-        const role = filters.role ? filters.role[0] : null;
-        setRoleFilter(role);
         const { current, pageSize } = pagination;
         setPageConfig({ page: current, pageSize });
     }
@@ -100,7 +81,7 @@ const SubjectManager = () => {
             const token = getCookie("token");
             setLoading(true);
             axios
-                .post(`${process.env.REACT_APP_API_URL}/admin/subject/filter`,
+                .post(`${process.env.REACT_APP_API_URL}/admin/class/filter`,
                     {
                         page, pageSize, role, name
                     },
@@ -111,20 +92,20 @@ const SubjectManager = () => {
                     })
                 .then((res) => {
                     const data = [];
-                    const arr = res.data.allSubject;
+                    const arr = res.data.classes;
                     arr.forEach((element) => {
                         data.push({ key: data.length, ...element });
                     });
                     setLoading(false);
-                    setListSubject(data);
+                    setListClasses(data);
                     setTotalRecords(res.data.total);
                 })
                 .catch(err => {
                     handleError(err);
                 });
         };
-        getSubjects(pageConfig.page, pageConfig.pageSize, roleFilter, searchText);
-    }, [pageConfig, roleFilter, searchText]);
+        getSubjects(pageConfig.page, pageConfig.pageSize, searchText);
+    }, [pageConfig, searchText]);
 
     const pagination = {
         defaultCurrent: pageConfig.page,
@@ -200,64 +181,37 @@ const SubjectManager = () => {
             },
         },
         {
-            title: 'Subject name',
+            title: 'Name',
             dataIndex: 'name',
             key: 'name',
             ...getColumnSearchProps('name')
         },
         {
-            title: 'Lecture',
-            dataIndex: 'lecture',
-            key: 'lecture',
-            render: (text, record) => {
-                let name = `${record.lecture.firstName} ${record.lecture.lastName}`
-                return (
-                    <Text strong underline> {name}</Text>
-                )
-            },
+            title: 'Code',
+            dataIndex: 'code',
+            key: 'code',
         },
         {
-            title: 'Course',
-            dataIndex: 'course',
-            key: 'course',
+            title: 'Curriculum',
+            dataIndex: 'curriculum',
+            key: 'curriculum',
             render: (text, record) => {
                 return (
-                    <Text strong > {record.course.name}</Text>
+                    <Text strong > {record.curriculum.name}</Text>
                 )
             },
-        },
-        {
-            title: 'Students',
-            key: 'studentCount',
-            dataIndex: 'studentCount'
-        },
-        {
-            title: 'Role',
-            key: 'role',
-            dataIndex: 'config',
-            render: (text, record) => {
-                const color = record.config.role === 'public' ? 'success' : 'error';
-                return (
-                    <Tag color={color}>{record.config.role}</Tag>
-                )
-            },
-            filterMultiple: false,
-            filters: [
-                { text: 'Public', value: 'public' },
-                { text: 'Private', value: 'private' },
-            ],
         },
         {
             title: 'Action',
             key: 'action',
             render: (text, record) => (
                 <Space size="middle">
-                    <Tooltip title="Edit this user">
+                    <Tooltip title="Edit this class">
                         <Button
                             type="default"
                             icon={<EditOutlined />}
                             onClick={() => {
-                                setSubject(record);
+                                setEditClass(record);
                                 showDrawer();
                             }}
                         >
@@ -265,23 +219,15 @@ const SubjectManager = () => {
                         </Button>
                     </Tooltip>
 
-                    <Tooltip title={record.isDeleted ? 'Unlock' : 'Lock'}>
+                    <Tooltip title="Show students">
                         <Button
-                            type='primary'
-                            icon={record.isDeleted ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                            onClick={() => { showConfirmLockSubject(record) }}
+                            type="primary"
+                            icon={<DatabaseOutlined />}
+                            onClick={() => {
+                                setManageStudent(record);
+                                setManageStudentVisible(true);
+                            }}
                         >
-                            {/* {record.isDeleted ? 'Unlock' : 'Lock'} */}
-                        </Button>
-                    </Tooltip>
-
-                    <Tooltip title="Delete user">
-                        <Button
-                            type="danger"
-                            icon={<DeleteOutlined />}
-                            onClick={() => { showConfirmDeleteSubject(record) }}
-                        >
-                            {/* Delete */}
                         </Button>
                     </Tooltip>
                 </Space >
@@ -289,54 +235,12 @@ const SubjectManager = () => {
         },
     ];
 
-    const showConfirmLockSubject = (record) => {
-        confirm({
-            title: `Do you Want to ${record.isDeleted ? 'Unlock' : 'Lock'} this subject : ${record.name}?`,
-            icon: <ExclamationCircleOutlined />,
-            onOk() {
-                // return deleteUser(record._id);
-                return new Promise((resolve, reject) => {
-                    lockSubject(record._id)
-                        .then((res) => {
-                            notify.notifySuccess("Success", res.data.message)
-                            handleUpdateResponses(res.data.subject);
-                            resolve();
-                        }).catch(err => {
-                            handleError(err);
-                            resolve();
-                        });
-                });
-            },
-        });
-    }
-
-    const showConfirmDeleteSubject = (record) => {
-        confirm({
-            title: `Do you Want to Delete this subject : ${record.name}?`,
-            icon: <ExclamationCircleOutlined />,
-            onOk() {
-                // return deleteUser(record._id);
-                return new Promise((resolve, reject) => {
-                    deleteSubject(record._id)
-                        .then((res) => {
-                            notify.notifySuccess("Success", res.data.message)
-                            handleDeleteResponses(record._id);
-                            resolve();
-                        }).catch(err => {
-                            handleError(err);
-                            resolve();
-                        });
-                });
-            },
-        });
-    }
-
     const handleError = (error) => {
-        notify.notifyError("Error", error.response.data.message)
+        notify.notifyError("Error", error.message)
     }
 
     const showDrawer = () => {
-        setVisible(true);
+        setDrawerVisible(true);
     };
 
     return (
@@ -345,16 +249,16 @@ const SubjectManager = () => {
                 <Col>
                     <Card>
                         <Card.Header>
-                            <Card.Title as="h5">Subject Manager</Card.Title>
+                            <Card.Title as="h5">Class Manager</Card.Title>
                             <span className="d-block m-t-5"></span>
                             <Button type="primary" onClick={showDrawer}
                                 icon={<PlusOutlined />}
-                            >Add subject</Button>
+                            >Add Class</Button>
                         </Card.Header>
                         <Card.Body>
                             <Table
                                 bordered columns={columns}
-                                dataSource={listSubject}
+                                dataSource={listClasses}
                                 pagination={pagination}
                                 loading={loading}
                                 onChange={handleTableChange} />
@@ -362,7 +266,13 @@ const SubjectManager = () => {
                     </Card>
                 </Col>
             </Row>
-            <SubjectDrawer handleResponses={handleResponses} visible={visible} setVisible={setVisible} subject={subject} setSubject={setSubject} />
+
+            <ClassDrawer handleResponses={handleResponses} visible={isDrawerVisible} setVisible={setDrawerVisible} cls={editClass} setClass={setEditClass} />
+
+            {manageStudent && isManageStudent &&
+                <StudentManager currentClass={manageStudent} visible={isManageStudent} setVisible={setManageStudentVisible} />
+
+            }
         </Aux>
     );
 }

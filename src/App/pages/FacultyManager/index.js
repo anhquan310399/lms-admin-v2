@@ -223,7 +223,7 @@ const FacultyManager = () => {
             key: 'action',
             render: (text, record) => (
                 <Space size="middle">
-                    <Tooltip title="Edit this Course">
+                    <Tooltip title="Edit this faculty">
                         <Button
                             type="default"
                             icon={<EditOutlined />}
@@ -251,7 +251,7 @@ const FacultyManager = () => {
 
     const handleError = (error) => {
         console.log(error);
-        notify.notifyError("Error", error?.response?.data?.message)
+        notify.notifyError("Error", error.message)
     }
 
     const showDrawer = () => {

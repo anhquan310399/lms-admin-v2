@@ -34,12 +34,12 @@ class AdminLayout extends Component {
                     token: token,
                 },
             });
-            newSocket.on("connect", () => {
-                notify.notifySuccess("success", "Socket Connected!");
-            });
-            newSocket.on("disconnect", () => {
-                notify.notifyError("fail", "Socket Disconnected!");
-            });
+            // newSocket.on("connect", () => {
+            //     notify.notifySuccess("success", "Socket Connected!");
+            // });
+            // newSocket.on("disconnect", () => {
+            //     notify.notifyError("fail", "Socket Disconnected!");
+            // });
             this.setState({ socket: newSocket });
         }
         const menu = routes.map((route, index) => {
