@@ -33,20 +33,20 @@ export default {
                     title: 'Semester Manager',
                     type: 'item',
                     url: '/semester',
-                    icon: 'feather icon-bookmark',
+                    icon: 'feather icon-clock',
                 },
                 {
                     id: 'curriculum-manager',
                     title: 'Curriculum',
                     type: 'collapse',
-                    icon: 'feather icon-user',
+                    icon: 'feather icon-server',
                     children: [
                         {
                             id: 'curriculum',
                             title: 'Curriculum Manager',
                             type: 'item',
                             url: '/curriculum',
-                            icon: 'feather icon-bookmark',
+                            icon: 'feather icon-list',
                         },
                         {
                             id: 'subject',
@@ -60,9 +60,16 @@ export default {
                             title: 'Class Manager',
                             type: 'item',
                             url: '/class',
-                            icon: 'feather icon-book',
+                            icon: 'feather icon-edit-2',
                         },
                     ]
+                },
+                {
+                    id: 'course',
+                    title: 'Course Manager',
+                    type: 'item',
+                    url: '/course',
+                    icon: 'feather icon-clock',
                 },
                 {
                     id: 'manager',

@@ -43,22 +43,25 @@ const SubjectManager = ({ curriculum, visible, setVisible }) => {
 
     const [form] = Form.useForm();
 
-    const [isAddSubject, setAddSubject] = useState(false);
+    const [isChanged, setChanged] = useState(false);
 
-    const deleteSubject = (idSubject) => {
-        const subjects = currentSubjects.filter(value => value._id !== idSubject);
+    const [reload, setReload] = useState(false);
 
-        setCurrentSubjects(subjects)
-        updateSubjects(subjects);
+    const deleteSubject = (subject) => {
+        setChanged(true);
+        const subjects = currentSubjects.filter(value => value._id !== subject._id);
+        console.log(subjects);
+        setCurrentSubjects(subjects);
+        setOthers([...others, subject]);
     };
 
-    const updateSubjects = (subjects) => {
+    const updateSubjects = () => {
         setLoading(true);
         const token = getCookie("token");
         axios
             .put(`${process.env.REACT_APP_API_URL}/admin/curriculum/${curriculum._id}/subjects`,
                 {
-                    subjects: subjects
+                    subjects: currentSubjects
                 },
                 {
                     headers: {
@@ -69,6 +72,7 @@ const SubjectManager = ({ curriculum, visible, setVisible }) => {
                 notify.notifySuccess("Success", res.data.message);
                 setCurrentSubjects(res.data.subjects);
                 setOthers(res.data.others);
+                setChanged(false);
             })
             .catch(err => {
                 handleError(err);
@@ -100,7 +104,7 @@ const SubjectManager = ({ curriculum, visible, setVisible }) => {
                     setLoading(false);
                 })
         }
-    }, [curriculum]);
+    }, [reload,curriculum]);
 
     const [searchText, setSearchText] = useState("");
 
@@ -213,7 +217,7 @@ const SubjectManager = ({ curriculum, visible, setVisible }) => {
             title: `Do you want to delete this subject "${record.name}" from this curriculum?`,
             icon: <ExclamationCircleOutlined />,
             onOk() {
-                deleteSubject(record._id);
+                deleteSubject(record);
             },
         });
     }
@@ -228,30 +232,16 @@ const SubjectManager = ({ curriculum, visible, setVisible }) => {
     }
 
     const addSubjects = (values) => {
-        setAddSubject(true);
-        const token = getCookie("token");
-        axios
-            .post(`${process.env.REACT_APP_API_URL}/admin/curriculum/${curriculum._id}/subjects`,
-                {
-                    subjects: values.subjects
-                },
-                {
-                    headers: {
-                        Authorization: token,
-                    },
-                })
-            .then((res) => {
-                notify.notifySuccess("Success", res.data.message);
-                setCurrentSubjects(res.data.subjects);
-                setOthers(res.data.others);
-                onCloseModal();
-            })
-            .catch(err => {
-                handleError(err);
-            })
-            .finally(() => {
-                setAddSubject(false);
-            })
+        setChanged(true);
+        const subjects = others.filter(value => values.subjects.includes(value._id));
+        setOthers(others.filter(value => !subjects.includes(value)));
+        setCurrentSubjects([...subjects, ...currentSubjects]);
+        onCloseModal();
+    }
+
+    const cancelChangeSubjects = () => {
+        setChanged(false);
+        setReload(!reload);
     }
 
     return (
@@ -287,6 +277,22 @@ const SubjectManager = ({ curriculum, visible, setVisible }) => {
                                     }}
                                 loading={loading} />
                         </Card.Body>
+
+                        {isChanged &&
+                            <Card.Footer>
+                                <Row style={{ float: 'right' }}>
+
+                                    <Button
+                                        style={{ marginRight: '10px' }}
+                                        onClick={cancelChangeSubjects}
+                                    >Cancel</Button>
+
+                                    <Button type="danger"
+                                        loading={loading}
+                                        onClick={updateSubjects}
+                                    >Save changes</Button>
+                                </Row>
+                            </Card.Footer>}
                     </Card>
                 </Col>
             </Row>
@@ -296,7 +302,7 @@ const SubjectManager = ({ curriculum, visible, setVisible }) => {
                     <div style={{ textAlign: 'right', }} >
                         <Button onClick={onCloseModal} style={{ marginRight: 8 }}>
                             Cancel</Button>
-                        <Button key="submit" form="subjectForm" htmlType="submit" type="primary" loading={isAddSubject}>
+                        <Button key="submit" form="subjectForm" htmlType="submit" type="primary">
                             Submit</Button>
                     </div>
                 }

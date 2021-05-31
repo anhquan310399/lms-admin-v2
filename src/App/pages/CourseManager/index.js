@@ -14,34 +14,34 @@ import {
 import * as notify from '../../../services/notify';
 import { getCookie } from '../../../services/localStorage';
 import axios from 'axios';
-import SubjectDrawer from './SubjectDrawer';
+import CourseDrawer from './CourseDrawer';
 import Highlighter from 'react-highlight-words';
 
 const { Text } = Typography;
 const { confirm } = Modal;
 
-const SubjectManager = () => {
+const CourseManager = () => {
     const [visible, setVisible] = useState(false);
 
-    const [listSubject, setListSubject] = useState([]);
+    const [listCourses, setListCourses] = useState([]);
 
-    const [subject, setSubject] = useState({});
+    const [course, setCourse] = useState({});
 
     const [loading, setLoading] = useState(false);
 
-    const handleAddResponses = (subject) => {
-        setListSubject([subject, ...listSubject]);
+    const handleAddResponses = (course) => {
+        setListCourses([course, ...listCourses]);
     }
 
-    const handleUpdateResponses = (subject) => {
-        const subjects = [...listSubject];
-        const index = subjects.findIndex(value => value._id === subject._id);
-        subjects[index] = subject;
-        setListSubject(subjects);
+    const handleUpdateResponses = (course) => {
+        const courses = [...listCourses];
+        const index = courses.findIndex(value => value._id === course._id);
+        courses[index] = course;
+        setListCourses(courses);
     }
 
-    const handleDeleteResponses = (idSubject) => {
-        setListSubject(listSubject.filter(value => value._id !== idSubject));
+    const handleDeleteResponses = (idCourse) => {
+        setListCourses(listCourses.filter(value => value._id !== idCourse));
     }
 
     const handleResponses = (method, data) => {
@@ -57,20 +57,20 @@ const SubjectManager = () => {
         }
     }
 
-    const lockSubject = (id) => {
+    const lockCourse = (id) => {
         const token = getCookie("token");
         return axios
-            .put(`${process.env.REACT_APP_API_URL}/admin/subject/${id}/hide`, {}, {
+            .put(`${process.env.REACT_APP_API_URL}/admin/course/${id}/lock`, {}, {
                 headers: {
                     Authorization: token,
                 },
             })
     };
 
-    const deleteSubject = (id) => {
+    const deleteCourse = (id) => {
         const token = getCookie("token");
         return axios
-            .delete(`${process.env.REACT_APP_API_URL}/admin/subject/${id}/`, {
+            .delete(`${process.env.REACT_APP_API_URL}/admin/course/${id}/`, {
                 headers: {
                     Authorization: token,
                 },
@@ -100,7 +100,7 @@ const SubjectManager = () => {
             const token = getCookie("token");
             setLoading(true);
             axios
-                .post(`${process.env.REACT_APP_API_URL}/admin/subject/filter`,
+                .post(`${process.env.REACT_APP_API_URL}/admin/course/filter`,
                     {
                         page, pageSize, role, name
                     },
@@ -111,12 +111,12 @@ const SubjectManager = () => {
                     })
                 .then((res) => {
                     const data = [];
-                    const arr = res.data.allSubject;
+                    const arr = res.data.courses;
                     arr.forEach((element) => {
                         data.push({ key: data.length, ...element });
                     });
                     setLoading(false);
-                    setListSubject(data);
+                    setListCourses(data);
                     setTotalRecords(res.data.total);
                 })
                 .catch(err => {
@@ -200,29 +200,29 @@ const SubjectManager = () => {
             },
         },
         {
-            title: 'Subject name',
+            title: 'Name',
             dataIndex: 'name',
             key: 'name',
             ...getColumnSearchProps('name')
         },
         {
-            title: 'Lecture',
-            dataIndex: 'lecture',
-            key: 'lecture',
+            title: 'Teacher',
+            dataIndex: 'teacher',
+            key: 'teacher',
             render: (text, record) => {
-                let name = `${record.lecture.firstName} ${record.lecture.lastName}`
+                let name = `${record.teacher.firstName} ${record.teacher.lastName}`
                 return (
                     <Text strong underline> {name}</Text>
                 )
             },
         },
         {
-            title: 'Course',
-            dataIndex: 'course',
-            key: 'course',
+            title: 'Semester',
+            dataIndex: 'semester',
+            key: 'semester',
             render: (text, record) => {
                 return (
-                    <Text strong > {record.course.name}</Text>
+                    <Text strong > {record.semester.name}</Text>
                 )
             },
         },
@@ -252,12 +252,12 @@ const SubjectManager = () => {
             key: 'action',
             render: (text, record) => (
                 <Space size="middle">
-                    <Tooltip title="Edit this user">
+                    <Tooltip title="Edit this course">
                         <Button
                             type="default"
                             icon={<EditOutlined />}
                             onClick={() => {
-                                setSubject(record);
+                                setCourse(record);
                                 showDrawer();
                             }}
                         >
@@ -269,7 +269,7 @@ const SubjectManager = () => {
                         <Button
                             type='primary'
                             icon={record.isDeleted ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                            onClick={() => { showConfirmLockSubject(record) }}
+                            onClick={() => { showConfirmLockCourse(record) }}
                         >
                             {/* {record.isDeleted ? 'Unlock' : 'Lock'} */}
                         </Button>
@@ -279,7 +279,7 @@ const SubjectManager = () => {
                         <Button
                             type="danger"
                             icon={<DeleteOutlined />}
-                            onClick={() => { showConfirmDeleteSubject(record) }}
+                            onClick={() => { showConfirmDeleteCourse(record) }}
                         >
                             {/* Delete */}
                         </Button>
@@ -289,17 +289,17 @@ const SubjectManager = () => {
         },
     ];
 
-    const showConfirmLockSubject = (record) => {
+    const showConfirmLockCourse = (record) => {
         confirm({
-            title: `Do you Want to ${record.isDeleted ? 'Unlock' : 'Lock'} this subject : ${record.name}?`,
+            title: `Do you want to ${record.isDeleted ? 'Unlock' : 'Lock'} this course : ${record.name}?`,
             icon: <ExclamationCircleOutlined />,
             onOk() {
                 // return deleteUser(record._id);
                 return new Promise((resolve, reject) => {
-                    lockSubject(record._id)
+                    lockCourse(record._id)
                         .then((res) => {
                             notify.notifySuccess("Success", res.data.message)
-                            handleUpdateResponses(res.data.subject);
+                            handleUpdateResponses(res.data.course);
                             resolve();
                         }).catch(err => {
                             handleError(err);
@@ -310,14 +310,14 @@ const SubjectManager = () => {
         });
     }
 
-    const showConfirmDeleteSubject = (record) => {
+    const showConfirmDeleteCourse = (record) => {
         confirm({
-            title: `Do you Want to Delete this subject : ${record.name}?`,
+            title: `Do you want to delete this course : ${record.name}?`,
             icon: <ExclamationCircleOutlined />,
             onOk() {
                 // return deleteUser(record._id);
                 return new Promise((resolve, reject) => {
-                    deleteSubject(record._id)
+                    deleteCourse(record._id)
                         .then((res) => {
                             notify.notifySuccess("Success", res.data.message)
                             handleDeleteResponses(record._id);
@@ -345,16 +345,16 @@ const SubjectManager = () => {
                 <Col>
                     <Card>
                         <Card.Header>
-                            <Card.Title as="h5">Subject Manager</Card.Title>
+                            <Card.Title as="h5">Course Manager</Card.Title>
                             <span className="d-block m-t-5"></span>
                             <Button type="primary" onClick={showDrawer}
                                 icon={<PlusOutlined />}
-                            >Add subject</Button>
+                            >Add Course</Button>
                         </Card.Header>
                         <Card.Body>
                             <Table
                                 bordered columns={columns}
-                                dataSource={listSubject}
+                                dataSource={listCourses}
                                 pagination={pagination}
                                 loading={loading}
                                 onChange={handleTableChange} />
@@ -362,9 +362,9 @@ const SubjectManager = () => {
                     </Card>
                 </Col>
             </Row>
-            <SubjectDrawer handleResponses={handleResponses} visible={visible} setVisible={setVisible} subject={subject} setSubject={setSubject} />
+            <CourseDrawer handleResponses={handleResponses} visible={visible} setVisible={setVisible} course={course} setCourse={setCourse} />
         </Aux>
     );
 }
 
-export default SubjectManager;
+export default CourseManager;

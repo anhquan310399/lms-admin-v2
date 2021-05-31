@@ -19,10 +19,14 @@ const CurriculumManager = React.lazy(() => import('./App/pages/CurriculumManager
 
 const ClassManager = React.lazy(() => import('./App/pages/ClassManager'));
 
+const CourseManager = React.lazy(() => import('./App/pages/CourseManager'));
+
+
 const routes = [
     { path: '/dashboard', exact: true, name: 'Dashboard', component: Dashboard },
     { path: '/semester', exact: true, name: 'Semester Manager', component: SemesterManager },
     { path: '/faculty', exact: true, name: 'Faculty Manager', component: FacultyManager },
+    { path: '/course', exact: true, name: 'Course Manager', component: CourseManager },
     { path: '/curriculum', exact: true, name: 'Curriculum Manager', component: CurriculumManager },
     { path: '/class', exact: true, name: 'Class Manager', component: ClassManager },
     { path: '/subject', exact: true, name: 'Subject Manager', component: SubjectManager },
