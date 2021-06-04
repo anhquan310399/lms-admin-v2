@@ -57,6 +57,10 @@ class AdminLayout extends Component {
         this.setState({ menu: menu });
     }
 
+    componentWillUnmount(){
+        this.state.socket.disconnect();
+    }
+
 
     mobileOutClickHandler() {
         if (this.props.windowWidth < 992 && this.props.collapseMenu) {

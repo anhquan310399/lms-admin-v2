@@ -275,7 +275,7 @@ const CourseManager = () => {
                         </Button>
                     </Tooltip>
 
-                    <Tooltip title="Delete user">
+                    <Tooltip title="Delete this course">
                         <Button
                             type="danger"
                             icon={<DeleteOutlined />}

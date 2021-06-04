@@ -69,7 +69,7 @@ export default {
                     title: 'Course Manager',
                     type: 'item',
                     url: '/course',
-                    icon: 'feather icon-clock',
+                    icon: 'feather icon-clipboard',
                 },
                 {
                     id: 'manager',
@@ -99,6 +99,21 @@ export default {
                             icon: 'feather icon-share-2'
                         }
                     ]
+                }
+            ]
+        },
+        {
+            id: 'setting',
+            title: 'Setting',
+            type: 'group',
+            icon: 'icon-navigation',
+            children: [
+                {
+                    id: 'profile',
+                    title: 'Profile',
+                    type: 'item',
+                    url: '/profile',
+                    icon: 'feather icon-image',
                 }
             ]
         },

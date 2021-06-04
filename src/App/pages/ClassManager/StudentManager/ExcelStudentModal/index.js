@@ -39,7 +39,7 @@ const ExcelStudentModal = ({ currentClass, updateStudents, visible, setVisible }
                 onCloseModal();
             })
             .catch(err => {
-                handleError(err);
+                notify.notifyError("Error", err.response.data.message)
             })
             .finally(() => {
                 setAddStudent(false);

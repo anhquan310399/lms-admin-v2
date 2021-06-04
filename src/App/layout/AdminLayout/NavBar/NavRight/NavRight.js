@@ -118,9 +118,8 @@ const NavRight = ({ rtlLayout, socket }) => {
                         <Dropdown.Menu alignRight className="profile-notification">
                             {infoAccount}
                             <ul className="pro-body">
-                                <li><a href={DEMO.BLANK_LINK} className="dropdown-item"><i className="feather icon-settings" /> Settings</a></li>
-                                <li><a href={DEMO.BLANK_LINK} className="dropdown-item"><i className="feather icon-user" /> Profile</a></li>
-                                <li><a href={DEMO.BLANK_LINK} className="dropdown-item"><i className="feather icon-mail" /> My Messages</a></li>
+                                <li><a href={"/profile"} className="dropdown-item"><i className="feather icon-user" /> Profile</a></li>
+                                <li><a href={DEMO.BLANK_LINK} className="dropdown-item" onClick={() => { setListOpen(true); }}><i className="feather icon-mail" /> My Messages</a></li>
                                 <li><a href={DEMO.BLANK_LINK} className="dropdown-item"><i className="feather icon-lock" /> Lock Screen</a></li>
                             </ul>
                         </Dropdown.Menu>
@@ -128,7 +127,7 @@ const NavRight = ({ rtlLayout, socket }) => {
                 </li>
             </ul>
 
-            
+
             <ChatList listOpen={listOpen} closed={() => { setListOpen(false); }} socket={socket} />
         </Aux>
     );
