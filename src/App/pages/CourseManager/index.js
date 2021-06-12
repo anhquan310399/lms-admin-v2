@@ -9,7 +9,8 @@ import {
     EyeInvisibleOutlined,
     DeleteOutlined,
     EditOutlined,
-    SearchOutlined
+    SearchOutlined,
+    DatabaseOutlined
 } from '@ant-design/icons';
 import * as notify from '../../../services/notify';
 import { getCookie } from '../../../services/localStorage';
@@ -17,17 +18,28 @@ import axios from 'axios';
 import CourseDrawer from './CourseDrawer';
 import Highlighter from 'react-highlight-words';
 
+import StudentManager from './StudentManager';
+
 const { Text } = Typography;
 const { confirm } = Modal;
+
+
 
 const CourseManager = () => {
     const [visible, setVisible] = useState(false);
 
     const [listCourses, setListCourses] = useState([]);
 
-    const [course, setCourse] = useState({});
+    const [course, setCourse] = useState(null);
 
     const [loading, setLoading] = useState(false);
+
+    /**
+    * Course manage student
+    */
+    const [manageStudent, setManageStudent] = useState({});
+
+    const [isManageStudent, setManageStudentVisible] = useState(false);
 
     const handleAddResponses = (course) => {
         setListCourses([course, ...listCourses]);
@@ -153,10 +165,10 @@ const CourseManager = () => {
                         style={{ width: 90 }}
                     >
                         Search
-              </Button>
+                    </Button>
                     <Button onClick={() => handleResetSearch(clearFilters)} size="small" style={{ width: 90 }}>
                         Reset
-              </Button>
+                    </Button>
                     <Button
                         type="link"
                         size="small"
@@ -166,7 +178,7 @@ const CourseManager = () => {
                         }}
                     >
                         Filter
-              </Button>
+                    </Button>
                 </Space>
             </div>
         ),
@@ -222,7 +234,7 @@ const CourseManager = () => {
             key: 'semester',
             render: (text, record) => {
                 return (
-                    <Text strong > {record.semester.name}</Text>
+                    <Text strong > {record.semester?.name}</Text>
                 )
             },
         },
@@ -287,6 +299,23 @@ const CourseManager = () => {
                 </Space >
             ),
         },
+        {
+            title: 'Students',
+            key: 'students',
+            render: (text, record) => (
+                <Tooltip title="Show students">
+                    <Button
+                        type="primary"
+                        icon={<DatabaseOutlined />}
+                        onClick={() => {
+                            setManageStudent(record);
+                            setManageStudentVisible(true);
+                        }}
+                    >
+                    </Button>
+                </Tooltip>
+            )
+        }
     ];
 
     const showConfirmLockCourse = (record) => {
@@ -332,7 +361,7 @@ const CourseManager = () => {
     }
 
     const handleError = (error) => {
-        notify.notifyError("Error", error.response.data.message)
+        notify.notifyError("Error", error.response?.data?.message || error.message);
     }
 
     const showDrawer = () => {
@@ -362,7 +391,14 @@ const CourseManager = () => {
                     </Card>
                 </Col>
             </Row>
+
             <CourseDrawer handleResponses={handleResponses} visible={visible} setVisible={setVisible} course={course} setCourse={setCourse} />
+
+            {manageStudent && isManageStudent &&
+                <StudentManager currentCourse={manageStudent} visible={isManageStudent} setVisible={setManageStudentVisible} />
+
+            }
+
         </Aux>
     );
 }

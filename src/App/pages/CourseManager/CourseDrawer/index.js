@@ -39,10 +39,13 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
     const [subjects, setSubjects] = useState([]);
     const [classes, setClasses] = useState([]);
 
+    const [isPrivate, setPrivate] = useState(true);
+
     const onClose = () => {
-        setCourse({});
+        setCourse(null);
         form.resetFields();
         setVisible(false);
+        setPrivate(true);
     };
 
     const onFinish = async (values) => {
@@ -217,13 +220,19 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
             idSemester: course?.idSemester,
             config: course?.config,
         })
+        if (course) {
+            console.log(course);
+            setPrivate(course.config.role === 'private');
+        } else {
+            setPrivate(true);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [course])
 
     return (
         <Button>
             <Drawer
-                title={course._id ? "Update course" : "Create a new course"}
+                title={course?._id ? "Update course" : "Create a new course"}
                 width={900}
                 onClose={onClose}
                 closable={false}
@@ -248,7 +257,7 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
                     <Row>
                         <Col>
                             <Divider orientation="left">Info</Divider>
-                            {course._id &&
+                            {course?._id &&
                                 <Form.Item
                                     name={"name"}
                                     label="Name"
@@ -285,28 +294,30 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
                                 </Select>
                             </Form.Item>
 
-                            <Form.Item
-                                name={"idSemester"}
-                                label="Semester"
-                                rules={[
-                                    {
-                                        required: true,
-                                    }
-                                ]}>
-                                <Select
-                                    showSearch
-                                    placeholder="Select semester"
-                                    optionFilterProp="children"
-                                    loading={loadingSemesters}
-                                    filterOption={(input, option) =>
-                                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                    }
-                                >
-                                    {semesters.map(value => {
-                                        return <Option key={value._id} value={value._id}>{value.name}</Option>
-                                    })}
-                                </Select>
-                            </Form.Item>
+                            {isPrivate &&
+                                <Form.Item
+                                    name={"idSemester"}
+                                    label="Semester"
+                                    rules={[
+                                        {
+                                            required: true,
+                                        }
+                                    ]}>
+                                    <Select
+                                        showSearch
+                                        placeholder="Select semester"
+                                        optionFilterProp="children"
+                                        loading={loadingSemesters}
+                                        filterOption={(input, option) =>
+                                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                        }
+                                    >
+                                        {semesters.map(value => {
+                                            return <Option key={value._id} value={value._id}>{value.name}</Option>
+                                        })}
+                                    </Select>
+                                </Form.Item>
+                            }
                         </Col>
                         <Col >
                             <Divider orientation="left">Configuration</Divider>
@@ -321,6 +332,9 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
                                 <Select
                                     style={{ width: 200 }}
                                     placeholder="Select role"
+                                    onChange={(value)=>{
+                                        setPrivate(value==='private');
+                                    }}
                                 >
                                     <Option key='public' value='public'>Public</Option>
                                     <Option key='private' value='private'>Private</Option>
@@ -347,7 +361,7 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
                         </Col>
                     </Row>
 
-                    {!course._id &&
+                    {!course?._id &&
                         <Row>
                             <Divider >Curriculum Configuration</Divider>
                             <Col>
