@@ -16,6 +16,21 @@ export default {
             ]
         },
         {
+            id: 'statistic',
+            title: 'Statistic',
+            type: 'group',
+            icon: 'icon-navigation',
+            children: [
+                {
+                    id: 'learning',
+                    title: 'Learning Result',
+                    type: 'item',
+                    url: '/statistic',
+                    icon: 'feather icon-pie-chart',
+                }
+            ]
+        },
+        {
             id: 'manager',
             title: 'Manager',
             type: 'group',

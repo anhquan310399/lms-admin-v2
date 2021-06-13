@@ -23,9 +23,11 @@ const CourseManager = React.lazy(() => import('./App/pages/CourseManager'));
 
 const ProfileManager = React.lazy(() => import('./App/pages/ProfileManager'));
 
+const Statistic = React.lazy(() => import('./App/pages/Statistic'));
 
 const routes = [
     { path: '/profile', exact: true, name: 'Profile', component: ProfileManager },
+    { path: '/statistic', exact: true, name: 'Statistic', component: Statistic },
     { path: '/dashboard', exact: true, name: 'Dashboard', component: Dashboard },
     { path: '/semester', exact: true, name: 'Semester Manager', component: SemesterManager },
     { path: '/faculty', exact: true, name: 'Faculty Manager', component: FacultyManager },

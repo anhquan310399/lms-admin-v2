@@ -11,7 +11,7 @@ const Dashboard = (props) => {
 
     const [statistic, setStatistic] = useState({});
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_API_URL}/admin/statistic`,
+        axios.get(`${process.env.REACT_APP_API_URL}/admin/statistic/dashboard`,
             {
                 headers: {
                     'Authorization': getCookie("token")
