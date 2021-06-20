@@ -6,6 +6,8 @@ import Aux from "../../../hoc/_Aux";
 import { getCookie } from '../../../services/localStorage';
 import * as notify from '../../../services/notify';
 import axios from 'axios';
+import StudentOfFacultyChart from './StudentOfFacultyChart';
+import CourseInSemesterChart from './CourseInSemesterChart';
 
 const Dashboard = (props) => {
 
@@ -175,6 +177,30 @@ const Dashboard = (props) => {
                                     <span className="d-block text-uppercase">total private subjects</span>
                                 </div>
                             </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row>
+                <Col md={6}>
+                    <Card>
+                        <Card.Header>
+                            <Card.Title as="h5">Students in a faculty</Card.Title>
+                        </Card.Header>
+                        <Card.Body className="text-center">
+                            <StudentOfFacultyChart />
+                        </Card.Body>
+                    </Card>
+                </Col>
+
+                <Col md={6}>
+                    <Card>
+                        <Card.Header>
+                            <Card.Title as="h5">Courses open in a semester</Card.Title>
+                        </Card.Header>
+                        <Card.Body className="text-center">
+                            <CourseInSemesterChart />
                         </Card.Body>
                     </Card>
                 </Col>

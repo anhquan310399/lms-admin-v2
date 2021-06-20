@@ -23,7 +23,8 @@ const Login = ({ history }) => {
     const handleResponseLogin = (res) => {
         if (res.data.user.idPrivilege === 'admin') {
             authenticate(res, () => {
-                notify.notifySuccess(`Hey ${res.data.user.firstName},`, `Welcome back!`)
+                const user = res.data.user;
+                notify.notifySuccess(`Hey ${user.firstName + " " + user.lastName},`, `Welcome back!`)
                 history.push("/");
             });
         } else {

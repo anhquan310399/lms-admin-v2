@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card } from 'react-bootstrap';
-import { Modal, Space, Table, Button, Input, Tag, Tooltip } from 'antd';
+import { Table, Select } from 'antd';
 import Aux from "../../../hoc/_Aux";
 import NVD3Chart from 'react-nvd3';
-import { CSVLink, CSVDownload } from "react-csv";
+import { CSVLink } from "react-csv";
 import {
     ExclamationCircleOutlined,
     PlusOutlined,
@@ -15,8 +15,7 @@ import {
 import * as notify from '../../../services/notify';
 import { getCookie } from '../../../services/localStorage';
 import axios from 'axios';
-
-const { confirm } = Modal;
+const { Option } = Select;
 
 const Statistic = () => {
 
@@ -27,6 +26,12 @@ const Statistic = () => {
     const [statistic, setStatistic] = useState(null);
 
     const [chartData, setChartData] = useState([]);
+
+    const [listSemesters, setListSemesters] = useState([]);
+
+    const [currentSemesterId, setCurrentSemesterId] = useState(null);
+
+    const [isLoadingSemesters, setLoadingSemesters] = useState(false);
 
     const headers = [
         { label: "MSSV", key: "code" },
@@ -46,23 +51,46 @@ const Statistic = () => {
     }
 
     useEffect(() => {
-        setLoading(true);
-        axios.get(`${process.env.REACT_APP_API_URL}/admin/statistic/learning`,
+        setLoadingSemesters(true);
+        axios.get(`${process.env.REACT_APP_API_URL}/admin/semester`,
             {
                 headers: {
                     'Authorization': getCookie("token")
                 }
             }
         ).then(res => {
-            console.log(res.data);
-            setStatistic(res.data.statistic);
-            setResult(res.data.result);
+            setListSemesters(res.data.semesters);
+
+            const semester = res.data.semesters.find(value => value.isCurrent);
+
+            setCurrentSemesterId(semester._id);
+
         }).catch(err => {
             notify.notifyError(err.response?.data?.message || err.message);
         }).finally(() => {
-            setLoading(false);
+            setLoadingSemesters(false);
         })
     }, [])
+
+    useEffect(() => {
+        if (currentSemesterId != null) {
+            setLoading(true);
+            axios.get(`${process.env.REACT_APP_API_URL}/admin/statistic/learning/${currentSemesterId}`,
+                {
+                    headers: {
+                        'Authorization': getCookie("token")
+                    }
+                }
+            ).then(res => {
+                setStatistic(res.data.statistic);
+                setResult(res.data.result);
+            }).catch(err => {
+                notify.notifyError(err.response?.data?.message || err.message);
+            }).finally(() => {
+                setLoading(false);
+            })
+        }
+    }, [currentSemesterId])
 
     useEffect(() => {
         if (statistic) {
@@ -139,23 +167,59 @@ const Statistic = () => {
 
     return (
         <Aux>
+
             <Row>
                 <Col>
                     <Card>
                         <Card.Header>
-                            <Card.Title as="h5">Learning result</Card.Title>
+                            <Card.Title as="h5">Choose semester</Card.Title>
+
+                            <Select
+                                className="ml-4"
+                                showSearch
+                                showArrow
+                                style={{ width: 400 }}
+                                placeholder="Select a semester"
+                                optionFilterProp="children"
+                                onChange={(value) => { setCurrentSemesterId(value) }}
+                                loading={isLoadingSemesters}
+                                value={currentSemesterId}
+                            >
+                                {
+                                    listSemesters.map(semester => {
+                                        return <Option value={semester._id}>{semester.name}</Option>
+                                    })
+                                }
+                            </Select>
+                        </Card.Header>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row>
+                <Col>
+                    <Card>
+                        <Card.Header>
+                            <Card.Title as="h5">Learning statistic</Card.Title>
                             <span className="d-block m-t-5"></span>
                         </Card.Header>
                         <Card.Body>
                             {chartData &&
-                                <NVD3Chart
-                                    type="discreteBarChart"
-                                    datum={chartData}
-                                    x="score"
-                                    y="count"
-                                    height={500}
-                                    showValues
-                                    groupSpacing={0.2} />
+                                React.createElement(NVD3Chart, {
+                                    xAxis: {
+                                        tickFormat: function (d) { return d; },
+                                        axisLabel: 'Score'
+                                    },
+                                    yAxis: {
+                                        axisLabel: 'Number of students',
+                                        tickFormat: function (d) { return d; }
+                                    },
+                                    type: 'discreteBarChart',
+                                    datum: chartData,
+                                    x: 'score',
+                                    y: 'count',
+                                    height: 400,
+                                })
                             }
                         </Card.Body>
                     </Card>
@@ -166,13 +230,13 @@ const Statistic = () => {
                 <Col>
                     <Card>
                         <Card.Header>
-                            <Card.Title as="h5">List</Card.Title>
+                            <Card.Title as="h5">Learning result</Card.Title>
                             {result &&
                                 <CSVLink
                                     data={result}
                                     headers={headers}
                                     filename={"learning-result.csv"}
-                                    className="btn btn-primary">
+                                    className="btn btn-primary pull-right">
                                     Download
                                 </CSVLink>
                             }
