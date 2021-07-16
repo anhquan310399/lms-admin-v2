@@ -42,7 +42,7 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
     const [isPrivate, setPrivate] = useState(true);
 
     const onClose = () => {
-        setCourse(null);
+        setCourse({});
         form.resetFields();
         setVisible(false);
         setPrivate(true);
@@ -51,7 +51,7 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
     const onFinish = async (values) => {
         setLoading(true);
         const token = getCookie("token");
-        if (!course._id) {
+        if (!course?._id) {
             createCourse(token, values);
 
         } else {
@@ -220,7 +220,7 @@ const CourseDrawer = ({ visible, setVisible, course, setCourse, handleResponses 
             idSemester: course?.idSemester,
             config: course?.config,
         })
-        if (course) {
+        if (course?.config) {
             console.log(course);
             setPrivate(course.config.role === 'private');
         } else {
