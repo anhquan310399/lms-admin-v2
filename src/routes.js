@@ -38,6 +38,8 @@ const routes = [
     { path: '/manager/teacher', exact: true, name: 'Manager', component: UserManager },
     { path: '/manager/student', exact: true, name: 'Manager', component: UserManager },
     { path: '/manager/register', exact: true, name: 'Manager', component: UserManager },
+    { path: '/manager/admin', exact: true, name: 'Manager', component: UserManager },
+
 ];
 
 export default routes;

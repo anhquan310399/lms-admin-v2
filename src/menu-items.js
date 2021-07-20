@@ -112,6 +112,13 @@ export default {
                             type: 'item',
                             url: '/manager/register',
                             icon: 'feather icon-share-2'
+                        },
+                        {
+                            id: 'administrator',
+                            title: 'Administrator Manager',
+                            type: 'item',
+                            url: '/manager/admin',
+                            icon: 'feather icon-shield'
                         }
                     ]
                 }

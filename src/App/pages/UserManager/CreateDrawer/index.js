@@ -34,6 +34,9 @@ const CreateUserDrawer = ({ role, visible, setVisible, handleAddResponses }) => 
 
     const onClose = () => {
         form.resetFields();
+        form.setFieldsValue({
+            idPrivilege: role
+        })
         setVisible(false);
     };
 
