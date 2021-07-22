@@ -156,11 +156,24 @@ const StudentManager = ({ currentClass, visible, setVisible }) => {
         setSearchText('');
     };
 
+    const handleTableChange = (pagination, filters) => {
+        const { current, pageSize } = pagination;
+        setPageConfig({ page: current, pageSize });
+    }
+
+    const [pageConfig, setPageConfig] = useState({
+        page: 1,
+        pageSize: 20
+    });
+
     const columns = [
         {
             title: '#',
+            // render: (text, record, index) => {
+            //     return index + 1;
+            // },
             render: (text, record, index) => {
-                return index + 1;
+                return (pageConfig.page - 1) * pageConfig.pageSize + index + 1
             },
         },
         {
@@ -249,7 +262,8 @@ const StudentManager = ({ currentClass, visible, setVisible }) => {
                                         showQuickJumper: true,
                                         showTotal: total => `Total ${total} students`
                                     }}
-                                loading={loading} />
+                                loading={loading} 
+                                onChange={handleTableChange}/>
                         </Card.Body>
                         {isChanged &&
                             <Card.Footer>
