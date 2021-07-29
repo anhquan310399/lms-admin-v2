@@ -23,8 +23,6 @@ const Statistic = () => {
 
     const [result, setResult] = useState(null);
 
-    const [statistic, setStatistic] = useState(null);
-
     const [chartData, setChartData] = useState([]);
 
     const [listSemesters, setListSemesters] = useState([]);
@@ -82,7 +80,7 @@ const Statistic = () => {
                     }
                 }
             ).then(res => {
-                setStatistic(res.data.statistic);
+                setChartData(res.data.statistic);
                 setResult(res.data.result);
             }).catch(err => {
                 notify.notifyError(err.response?.data?.message || err.message);
@@ -91,16 +89,6 @@ const Statistic = () => {
             })
         }
     }, [currentSemesterId])
-
-    useEffect(() => {
-        if (statistic) {
-            setChartData([{
-                values: statistic,
-                key: 'Students',
-                color: '#A389D4'
-            }])
-        }
-    }, [statistic])
 
     const getColumnTable = (facultyFilters, classFilters) => {
         return [
@@ -196,35 +184,6 @@ const Statistic = () => {
                 </Col>
             </Row>
 
-            <Row>
-                <Col>
-                    <Card>
-                        <Card.Header>
-                            <Card.Title as="h5">Learning statistic</Card.Title>
-                            <span className="d-block m-t-5"></span>
-                        </Card.Header>
-                        <Card.Body>
-                            {chartData &&
-                                React.createElement(NVD3Chart, {
-                                    xAxis: {
-                                        tickFormat: function (d) { return d; },
-                                        axisLabel: 'Score'
-                                    },
-                                    yAxis: {
-                                        axisLabel: 'Number of students',
-                                        tickFormat: function (d) { return d; }
-                                    },
-                                    type: 'discreteBarChart',
-                                    datum: chartData,
-                                    x: 'score',
-                                    y: 'count',
-                                    height: 400,
-                                })
-                            }
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
 
             <Row>
                 <Col>
@@ -248,6 +207,36 @@ const Statistic = () => {
                                 dataSource={result}
                                 pagination={pagination}
                                 loading={loading} />
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Row>
+                <Col>
+                    <Card>
+                        <Card.Header>
+                            <Card.Title as="h5">Learning statistic</Card.Title>
+                            <span className="d-block m-t-5"></span>
+                        </Card.Header>
+                        <Card.Body>
+                            {chartData &&
+                                React.createElement(NVD3Chart, {
+                                    xAxis: {
+                                        tickFormat: function (d) { return d;},
+                                        axisLabel: 'Score'
+                                    },
+                                    yAxis: {
+                                        axisLabel: 'Number of students',
+                                        tickFormat: function (d) { return d; }
+                                    },
+                                    type: 'multiBarChart',
+                                    datum: chartData,
+                                    x: 'score',
+                                    y: 'count',
+                                    height: 400,
+                                })
+                            }
                         </Card.Body>
                     </Card>
                 </Col>
